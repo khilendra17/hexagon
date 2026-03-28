@@ -1,48 +1,19 @@
-import { useEffect, useState } from "react";
-import { io } from "socket.io-client";
-import { api } from "../services/api.js";
+import { useEffect } from 'react';
+import { socket } from '../socket';
 
-export function useSocket() {
-  const baseURL = import.meta.env.VITE_API_URL;
-  const [vitals, setVitals] = useState([]);
-  const [alerts, setAlerts] = useState([]);
-
+export function useVitals(patientId, onData) {
   useEffect(() => {
-    let cancelled = false;
-    let socket;
+    if (!patientId) return;
+    const handler = (data) => onData(data);
+    socket.on(`vitals:${patientId}`, handler);
+    return () => socket.off(`vitals:${patientId}`, handler);
+  }, [patientId, onData]);
+}
 
-    async function loadInitial() {
-      try {
-        const [vh, ar] = await Promise.all([
-          api.get("/api/vitals/history", { params: { limit: 100 } }),
-          api.get("/api/alerts"),
-        ]);
-        if (cancelled) return;
-        const v = vh.data?.data ?? [];
-        setVitals([...v].reverse());
-        setAlerts(ar.data?.data ?? []);
-      } catch (e) {
-        console.error(e);
-      }
-    }
-
-    loadInitial();
-
-    if (baseURL) {
-      socket = io(baseURL, { transports: ["websocket", "polling"] });
-      socket.on("vitals:new", (doc) => {
-        setVitals((prev) => [...prev, doc].slice(-100));
-      });
-      socket.on("alert:new", (doc) => {
-        setAlerts((prev) => [doc, ...prev].slice(0, 100));
-      });
-    }
-
-    return () => {
-      cancelled = true;
-      socket?.disconnect();
-    };
-  }, [baseURL]);
-
-  return { vitals, alerts };
+export function useAlerts(onAlert) {
+  useEffect(() => {
+    const handler = (data) => onAlert(data);
+    socket.on('alert', handler);
+    return () => socket.off('alert', handler);
+  }, [onAlert]);
 }
