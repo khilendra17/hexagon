@@ -1,9 +1,11 @@
 import Vitals from "../models/Vitals.js";
 import { emitVitalsNew } from "../sockets/index.js";
+import * as alertService from "../services/alertService.js";
 
 export async function createVitals(req) {
   const vitals = await Vitals.create(req.body);
   emitVitalsNew(req.app.locals.io, vitals);
+  await alertService.evaluate(vitals, req.app.locals.io);
   return vitals;
 }
 

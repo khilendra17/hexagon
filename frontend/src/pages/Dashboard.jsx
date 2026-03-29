@@ -1,14 +1,13 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect } from 'react';
 import Sidebar from '../components/Sidebar';
 import TopBar from '../components/TopBar';
 import PatientCard from '../components/PatientCard';
 import AlertsPanel from '../components/AlertsPanel';
 import { MOCK_PATIENTS, MOCK_ALERTS } from '../utils/formatVitals';
-import { useVitals } from '../hooks/useSocket';
 
 export default function Dashboard() {
   const [patients, setPatients] = useState(MOCK_PATIENTS);
-  const [liveMap, setLiveMap] = useState({});
+  const [liveMap] = useState({});
   const unacked = MOCK_ALERTS.filter((a) => !a.acked).length;
 
   // Simulate live data ticks

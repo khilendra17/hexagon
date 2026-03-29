@@ -10,10 +10,12 @@ const alertSchema = new mongoose.Schema(
       required: true,
     },
     acknowledged: { type: Boolean, default: false },
-    hash: { type: String, unique: true },
+    hash: { type: String },
     timestamp: { type: Date, default: Date.now },
   },
   { versionKey: false }
 );
+
+alertSchema.index({ hash: 1 }, { unique: true, sparse: true });
 
 export default mongoose.model("Alert", alertSchema);

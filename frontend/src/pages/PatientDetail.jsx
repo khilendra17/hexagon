@@ -1,11 +1,13 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import Sidebar from '../components/Sidebar';
 import TopBar from '../components/TopBar';
 import VitalsChart from '../components/VitalsChart';
-import DrugImpactChart from '../components/DrugImpactChart';
+import DrugCurveChart from '../components/DrugCurveChart';
+import InsightBanner from '../components/InsightBanner';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ReferenceLine } from 'recharts';
-import { MOCK_PATIENTS, generateHistory, generateDrugImpact, fmtHR, fmtSpO2, fmtFlow, statusColor } from '../utils/formatVitals';
+import { MOCK_PATIENTS, generateHistory, fmtHR, fmtSpO2, fmtFlow, statusColor } from '../utils/formatVitals';
+import { useDrugCurveInsight } from '../hooks/useSocket';
 import { ArrowLeft } from 'lucide-react';
 
 export default function PatientDetail() {
@@ -15,7 +17,7 @@ export default function PatientDetail() {
 
   const [liveVitals, setLiveVitals] = useState({ hr: patient.hr, spo2: patient.spo2, ivFlow: patient.ivFlow, valve: patient.valve, backflow: patient.backflow });
   const [history, setHistory] = useState(() => generateHistory(60, patient.hr, patient.spo2));
-  const [drugData] = useState(generateDrugImpact);
+  const [insightPayload] = useDrugCurveInsight();
   const [flowRate, setFlowRate] = useState(patient.ivFlow);
   const [valve, setValve] = useState(patient.valve);
   const [saving, setSaving] = useState(false);
@@ -49,7 +51,7 @@ export default function PatientDetail() {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ patientId: id, state: newState }),
       });
-    } catch (_) { /* mock */ }
+    } catch { /* mock */ }
     setValve(newState);
     setSaving(false);
   }
@@ -62,7 +64,7 @@ export default function PatientDetail() {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ patientId: id, rate: newRate }),
       });
-    } catch (_) { /* mock */ }
+    } catch { /* mock */ }
   }
 
   const sc = statusColor(patient.status);
@@ -198,10 +200,11 @@ export default function PatientDetail() {
             </div>
           </div>
 
-          {/* Row 3: Drug Impact */}
+          {/* Row 3: Drug Impact Curve (rule-based) */}
           <div className="card">
-            <div className="card-title">DRUG IMPACT CURVE — AI ANALYSIS</div>
-            <DrugImpactChart data={drugData} drug={patient.drug} responseDelay="5m 35s" effectiveness={87} />
+            <div className="card-title">DRUG IMPACT CURVE — IV START CORRELATION</div>
+            <InsightBanner text={insightPayload?.insight} />
+            <DrugCurveChart payload={insightPayload} />
           </div>
 
         </div>

@@ -19,3 +19,7 @@ export function emitVitalsNew(io, vitals) {
 export function emitAlertNew(io, alert) {
   if (io) io.emit("alert:new", alert);
 }
+
+export function emitInsightUpdate(io, payload) {
+  if (io) io.emit("insight:update", payload);
+}

@@ -7,6 +7,8 @@ import { setupSockets } from "./sockets/index.js";
 import vitalsRoutes from "./routes/vitalsRoutes.js";
 import eventRoutes from "./routes/eventRoutes.js";
 import alertRoutes from "./routes/alertRoutes.js";
+import insightsRoutes from "./routes/insightsRoutes.js";
+import analyzeFrameRoutes from "./routes/analyzeFrameRoutes.js";
 
 dotenv.config();
 
@@ -21,6 +23,8 @@ app.use(express.json());
 app.use("/api/vitals", vitalsRoutes);
 app.use("/api/events", eventRoutes);
 app.use("/api/alerts", alertRoutes);
+app.use("/api/insights", insightsRoutes);
+app.use("/api/analyze-frame", analyzeFrameRoutes);
 
 app.get("/health", (_req, res) => {
   res.status(200).json({ status: "ok", service: "backend" });

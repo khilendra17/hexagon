@@ -37,6 +37,9 @@ export const getPatientHistory = (id, from, to) =>
   api.get(`/api/patient/${id}/history`, { params: { from, to } });
 export const getDrugImpact = (id) => api.get(`/api/patient/${id}/drug-impact`);
 
+// ── Insights (drug curve) ────────────────────────────────────
+export const getInsights = () => api.get('/api/insights');
+
 // ── Alerts ───────────────────────────────────────────────────
 export const getActiveAlerts = () => api.get('/api/alerts?status=active');
 export const acknowledgeAlert = (id) => api.post(`/api/alerts/${id}/ack`);

@@ -26,7 +26,7 @@ export default function Login() {
           const d = await res.json();
           token = d.token;
         }
-      } catch (_) { /* offline */ }
+      } catch { /* offline */ }
 
       // Demo fallback
       if (!token) {
