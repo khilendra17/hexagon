@@ -25,7 +25,8 @@ router.get('/:id', async (req, res) => {
     if (!patient) return res.status(404).json({ success: false, error: 'Patient not found' });
     const vitals = await getPatientLatestVitals(req.params.id, 1);
     const iv = getPatientIVState(req.params.id);
-    res.json({ success: true, data: { ...patient.toObject(), latestVitals: vitals[0] || null, iv } });
+    const patientData = patient.toObject ? patient.toObject() : patient;
+    res.json({ success: true, data: { ...patientData, latestVitals: vitals[0] || null, iv } });
   } catch (err) {
     res.status(500).json({ success: false, error: err.message });
   }

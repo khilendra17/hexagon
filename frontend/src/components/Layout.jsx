@@ -14,7 +14,7 @@ const NAV_LINKS = [
 
 export default function Layout() {
   const { patients, selectedPatientId, setSelectedPatientId, selectedPatient } = usePatientContext();
-  const { unresolvedCount } = useAlerts(null); // global alerts count
+  const { alerts, unresolvedCount } = useAlerts(null); // global alerts count
   const { logout, user } = useAuth();
   const navigate = useNavigate();
   const loc = useLocation();
@@ -22,6 +22,13 @@ export default function Layout() {
   function handlePatientClick(id) {
     setSelectedPatientId(id);
     navigate('/');
+  }
+
+  function getPatientStatus(id, defaultCond) {
+    const pAlerts = alerts.filter(a => String(a.patientId) === String(id) && !a.acknowledged && !a.resolved);
+    if (pAlerts.some(a => a.severity === 'critical')) return 'Critical';
+    if (pAlerts.some(a => a.severity === 'warning')) return 'Watch';
+    return defaultCond || 'Stable';
   }
 
   function switchView(view) {
@@ -90,8 +97,8 @@ export default function Layout() {
           <div className="sidebar-section-label">Patients</div>
           {patients.map((p) => {
             const id = p._id?.toString?.() || p._id;
-            const status = (p.condition || 'Stable').toLowerCase();
-            const statusDot = status === 'critical' ? 'critical' : status === 'watch' ? 'watch' : 'stable';
+            const liveStatus = getPatientStatus(id, p.condition);
+            const statusDot = liveStatus.toLowerCase() === 'critical' ? 'critical' : liveStatus.toLowerCase() === 'watch' ? 'watch' : 'stable';
             const isSelected = id === selectedPatientId;
             return (
               <div
@@ -116,7 +123,7 @@ export default function Layout() {
                         : '#2C7BE5',
                   }}
                 >
-                  {p.condition || 'Stable'}
+                  {liveStatus}
                 </span>
               </div>
             );

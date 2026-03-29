@@ -1,5 +1,7 @@
 import crypto from 'crypto';
+import mongoose from 'mongoose';
 import Alert from '../models/Alert.js';
+import { _memAlerts } from '../controllers/alertController.js';
 import { emitAlertNew } from '../sockets/index.js';
 
 // PRD §15.1 thresholds
@@ -72,17 +74,40 @@ export async function evaluate(io, vitalsData) {
       .digest('hex');
 
     try {
-      const existing = await Alert.findOne({ hash });
+      const isConnected = mongoose.connection.readyState === 1;
+      let existing;
+      if (isConnected) {
+        existing = await Alert.findOne({ hash });
+      } else {
+        existing = _memAlerts.find(a => a.hash === hash);
+      }
+      
       if (existing) continue; // suppress duplicate
 
-      const alert = await Alert.create({
-        type: rule.type,
-        severity: rule.severity,
-        message: rule.message(vitalsData),
-        hash,
-        patientId: vitalsData.patientId || null,
-        acknowledged: false,
-      });
+      let alert;
+      if (isConnected) {
+        alert = await Alert.create({
+          type: rule.type,
+          severity: rule.severity,
+          message: rule.message(vitalsData),
+          hash,
+          patientId: vitalsData.patientId || null,
+          acknowledged: false,
+        });
+      } else {
+        alert = {
+          _id: `mem_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`,
+          type: rule.type,
+          severity: rule.severity,
+          message: rule.message(vitalsData),
+          hash,
+          patientId: vitalsData.patientId || null,
+          acknowledged: false,
+          timestamp: new Date(),
+        };
+        _memAlerts.unshift(alert);
+        if (_memAlerts.length > 200) _memAlerts.splice(200);
+      }
 
       emitAlertNew(io, alert);
       results.push(alert);
