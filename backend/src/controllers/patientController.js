@@ -4,7 +4,7 @@ import Vitals from '../models/Vitals.js';
 import { getIVState } from '../services/simulatorService.js';
 
 const SEED_PATIENTS_DATA = [
-  { name: 'Rahul Sharma', bedNumber: 'Bed 4A', age: 42, condition: 'Stable' },
+  { name: 'Rahul Sharma', bedNumber: 'Bed 4A', age: 42, condition: 'Stable', slug: 'rahul-sharma' },
   { name: 'Meena Patel',  bedNumber: 'Bed 4B', age: 67, condition: 'Watch' },
   { name: 'Arjun Kumar',  bedNumber: 'Bed 5A', age: 31, condition: 'Critical' },
   { name: 'Sunita Rao',   bedNumber: 'Bed 5B', age: 55, condition: 'Stable' },
@@ -19,6 +19,7 @@ function getMemPatients() {
   if (!_memPatients) {
     _memPatients = SEED_PATIENTS_DATA.map((p, i) => ({
       _id: `p${i + 1}`,
+      slug: p.slug || null,
       ...p,
       ward: 'Ward 3B',
       assignedDoctor: 'Dr. Anjali Mehta',
@@ -58,10 +59,16 @@ export async function getAllPatients() {
 }
 
 export async function getPatientById(id) {
+  if (!id) return null;
+  const key = String(id).trim();
   if (!isMongoConnected()) {
-    return getMemPatients().find(p => p._id === id) || null;
+    return getMemPatients().find((p) => p._id === key || p.slug === key) || null;
   }
-  return Patient.findById(id);
+  if (mongoose.Types.ObjectId.isValid(key)) {
+    const byId = await Patient.findById(key);
+    if (byId) return byId;
+  }
+  return Patient.findOne({ slug: key });
 }
 
 export async function getPatientLatestVitals(patientId, limit = 30) {

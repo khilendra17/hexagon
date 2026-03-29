@@ -12,7 +12,9 @@ import controlRoutes from './routes/controlRoutes.js';
 import sessionsRoutes from './routes/sessions.js';
 import insightsRoutes from './routes/insights.js';
 import aiProxyRoutes from './routes/aiProxy.js';
+import authRoutes from './routes/authRoutes.js';
 import { seedPatients } from './controllers/patientController.js';
+import { seedAuthUsers } from './controllers/authController.js';
 import { seedBottleSessions } from './services/seedService.js';
 import { startSimulator, registerPatients } from './services/simulatorService.js';
 
@@ -30,6 +32,7 @@ app.use(express.json());
 const io = setupSockets(server, app);
 
 // Routes
+app.use('/api/auth', authRoutes);
 app.use('/api/patients', patientRoutes);
 app.use('/api/vitals', vitalsRoutes);
 app.use('/api/events', eventRoutes);
@@ -60,6 +63,12 @@ app.get('/health', (_req, res) => {
       { _id: { toString: () => 'p3' }, name: 'Arjun Kumar', prescribedRate: 45, bedNumber: 'Bed 5A' },
     ];
     registerPatients(mockPatients);
+  }
+
+  try {
+    await seedAuthUsers();
+  } catch (e) {
+    console.warn('Auth user seed:', e.message);
   }
 
   // Start simulator only in development

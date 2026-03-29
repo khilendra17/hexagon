@@ -4,7 +4,7 @@ import { getPatients } from '../api/index.js';
 export const PatientContext = createContext(null);
 
 const MOCK_PATIENTS = [
-  { _id: 'p1', name: 'Rahul Sharma', bedNumber: 'Bed 4A', age: 42, condition: 'Stable', ward: 'Ward 3B', assignedDoctor: 'Dr. Anjali Mehta', prescribedRate: 45 },
+  { _id: 'p1', slug: 'rahul-sharma', name: 'Rahul Sharma', bedNumber: 'Bed 4A', age: 42, condition: 'Stable', ward: 'Ward 3B', assignedDoctor: 'Dr. Anjali Mehta', prescribedRate: 45 },
   { _id: 'p2', name: 'Meena Patel', bedNumber: 'Bed 4B', age: 67, condition: 'Watch', ward: 'Ward 3B', assignedDoctor: 'Dr. Anjali Mehta', prescribedRate: 45 },
   { _id: 'p3', name: 'Arjun Kumar', bedNumber: 'Bed 5A', age: 31, condition: 'Critical', ward: 'Ward 3B', assignedDoctor: 'Dr. Anjali Mehta', prescribedRate: 45 },
   { _id: 'p4', name: 'Sunita Rao', bedNumber: 'Bed 5B', age: 55, condition: 'Stable', ward: 'Ward 3B', assignedDoctor: 'Dr. Anjali Mehta', prescribedRate: 45 },

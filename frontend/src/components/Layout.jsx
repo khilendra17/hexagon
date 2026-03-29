@@ -1,6 +1,7 @@
 import { NavLink, Outlet, useNavigate, useLocation } from 'react-router-dom';
 import { usePatientContext } from '../context/PatientContext.jsx';
 import { useAlerts } from '../hooks/useAlerts.js';
+import { useAuth } from '../hooks/useAuth.js';
 
 const NAV_LINKS = [
   { to: '/', label: 'Dashboard', icon: DashIcon, end: true },
@@ -12,8 +13,9 @@ const NAV_LINKS = [
 ];
 
 export default function Layout() {
-  const { patients, selectedPatientId, setSelectedPatientId } = usePatientContext();
+  const { patients, selectedPatientId, setSelectedPatientId, selectedPatient } = usePatientContext();
   const { unresolvedCount } = useAlerts(null); // global alerts count
+  const { logout, user } = useAuth();
   const navigate = useNavigate();
   const loc = useLocation();
 
@@ -24,8 +26,10 @@ export default function Layout() {
 
   function switchView(view) {
     localStorage.setItem('vitaflow_view', view);
-    if (view === 'patient') navigate('/patient/rahul-sharma');
-    else navigate('/');
+    if (view === 'patient') {
+      const slug = selectedPatient?.slug || selectedPatientId || 'rahul-sharma';
+      navigate(`/patient/${slug}`);
+    } else navigate('/');
   }
 
   return (
@@ -58,7 +62,25 @@ export default function Layout() {
               <span className="navbar-bell-badge">{unresolvedCount}</span>
             )}
           </div>
-          <div className="navbar-avatar">Dr AM</div>
+          <button
+            type="button"
+            className="btn-text"
+            style={{ fontSize: 12, marginRight: 8 }}
+            onClick={() => {
+              logout();
+              navigate('/login');
+            }}
+          >
+            Sign out
+          </button>
+          <div className="navbar-avatar" title={user?.email || ''}>
+            {(user?.name || 'Staff')
+              .split(' ')
+              .map((s) => s[0])
+              .join('')
+              .slice(0, 2)
+              .toUpperCase()}
+          </div>
         </div>
       </nav>
 

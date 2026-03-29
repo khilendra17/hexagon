@@ -1072,6 +1072,182 @@ a { color: inherit; text-decoration: none; }
 }
 .patient-nav-icon { font-size: 22px; }
 
+/* PRD patient dashboard — vitals row, drug curve, alerts */
+.patient-prd-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+.patient-connection-row {
+  width: 100%;
+  order: 3;
+}
+@media (min-width: 520px) {
+  .patient-connection-row {
+    width: auto;
+    order: unset;
+  }
+}
+.patient-conn {
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+}
+.patient-conn-ok { color: #0d7d4d; }
+.patient-conn-warn { color: #b45309; }
+.patient-prd-grid-top {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 12px;
+  margin-bottom: 24px;
+}
+@media (min-width: 560px) {
+  .patient-prd-grid-top {
+    grid-template-columns: 1fr 1fr 1.2fr;
+  }
+}
+.patient-prd-stat {
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 16px;
+  box-shadow: var(--shadow);
+}
+.patient-prd-stat-label {
+  font-size: 13px;
+  color: var(--text-secondary);
+  margin-bottom: 8px;
+}
+.patient-prd-stat-value {
+  font-size: 32px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  color: var(--text-primary);
+  line-height: 1.1;
+}
+.patient-prd-unit {
+  font-size: 16px;
+  font-weight: 500;
+  margin-left: 6px;
+  color: var(--text-secondary);
+}
+.patient-iv-badge {
+  display: inline-block;
+  padding: 6px 12px;
+  border-radius: 999px;
+  font-size: 14px;
+  font-weight: 600;
+  margin-bottom: 10px;
+}
+.patient-iv-badge.running {
+  background: rgba(13, 125, 77, 0.12);
+  color: #0d7d4d;
+}
+.patient-iv-badge.stopped {
+  background: rgba(217, 48, 37, 0.1);
+  color: #c5221f;
+}
+.patient-iv-vision {
+  border-radius: var(--radius);
+  padding: 10px 12px;
+  font-size: 13px;
+}
+.patient-iv-vision-good {
+  background: rgba(13, 125, 77, 0.08);
+  border: 1px solid rgba(13, 125, 77, 0.25);
+}
+.patient-iv-vision-bad {
+  background: rgba(217, 48, 37, 0.08);
+  border: 1px solid rgba(217, 48, 37, 0.25);
+}
+.patient-iv-vision-warn {
+  background: rgba(180, 83, 9, 0.08);
+  border: 1px solid rgba(180, 83, 9, 0.3);
+}
+.patient-iv-vision-label {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-muted);
+  margin-bottom: 4px;
+}
+.patient-iv-vision-value {
+  font-weight: 600;
+  color: var(--text-primary);
+}
+.patient-chart-wrap .recharts-cartesian-grid line {
+  stroke: #e8ecf0;
+}
+.patient-chart-wrap .recharts-text {
+  fill: var(--text-muted);
+}
+.patient-prd-split {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 16px;
+  margin-bottom: 28px;
+}
+@media (min-width: 720px) {
+  .patient-prd-split {
+    grid-template-columns: 1fr 1fr;
+    align-items: start;
+  }
+}
+.patient-prd-card {
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 16px;
+  box-shadow: var(--shadow);
+}
+.patient-muted-text {
+  font-size: 14px;
+  color: var(--text-muted);
+  margin: 0;
+}
+.patient-insight-clinical {
+  color: var(--text-primary);
+}
+.patient-alert-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  max-height: 320px;
+  overflow-y: auto;
+}
+.patient-alert {
+  border-radius: var(--radius);
+  padding: 10px 12px;
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  border-left: 4px solid var(--border);
+}
+.patient-alert-critical {
+  background: rgba(217, 48, 37, 0.06);
+  border-left-color: #d93025;
+}
+.patient-alert-warning {
+  background: rgba(244, 161, 0, 0.08);
+  border-left-color: #f4a100;
+}
+.patient-alert-info {
+  background: rgba(82, 96, 109, 0.06);
+  border-left-color: #52606d;
+}
+.patient-alert-severity {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  color: var(--text-muted);
+  flex-shrink: 0;
+}
+.patient-alert-body { flex: 1; min-width: 0; }
+.patient-alert-msg { font-size: 14px; color: var(--text-primary); line-height: 1.4; }
+.patient-alert-time { font-size: 12px; color: var(--text-muted); margin-top: 4px; }
+
 /* ============================================================
    STATUS INDICATOR (3-col current status card)
 ============================================================ */

@@ -2,6 +2,7 @@ import mongoose from 'mongoose';
 
 const patientSchema = new mongoose.Schema(
   {
+    slug: { type: String, trim: true, sparse: true, unique: true },
     name: { type: String, required: true },
     bedNumber: { type: String, required: true },
     age: { type: Number, required: true },

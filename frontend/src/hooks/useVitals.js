@@ -3,11 +3,11 @@ import { socket } from '../socket.js';
 import { getVitals } from '../api/index.js';
 
 /**
- * useVitals(patientId)
- * Fetches last 30 readings on mount, then appends live socket updates.
+ * useVitals(patientId, maxPoints)
+ * Fetches last maxPoints readings on mount, then appends live socket updates.
  * Returns { vitals, latest, loading }
  */
-export function useVitals(patientId) {
+export function useVitals(patientId, maxPoints = 30) {
   const [vitals, setVitals] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -15,14 +15,14 @@ export function useVitals(patientId) {
   useEffect(() => {
     if (!patientId) return;
     setLoading(true);
-    getVitals(patientId, 30)
+    getVitals(patientId, maxPoints)
       .then((res) => {
         const list = (res?.data || res || []).slice().reverse(); // oldest→newest
         setVitals(list);
       })
       .catch(() => {}) // ignore — socket will populate
       .finally(() => setLoading(false));
-  }, [patientId]);
+  }, [patientId, maxPoints]);
 
   // Subscribe to live updates
   useEffect(() => {
@@ -31,7 +31,7 @@ export function useVitals(patientId) {
       if ((data.patientId?.toString?.() || data.patientId) !== patientId?.toString()) return;
       setVitals((prev) => {
         const next = [...prev, data];
-        return next.length > 30 ? next.slice(-30) : next;
+        return next.length > maxPoints ? next.slice(-maxPoints) : next;
       });
     };
     socket.on('vitals_update', handler);
@@ -40,7 +40,7 @@ export function useVitals(patientId) {
       socket.off('vitals_update', handler);
       socket.off('vitals:new', handler);
     };
-  }, [patientId]);
+  }, [patientId, maxPoints]);
 
   const latest = vitals[vitals.length - 1] || null;
   return { vitals, latest, loading };

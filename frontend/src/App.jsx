@@ -1,5 +1,7 @@
 import { Routes, Route } from 'react-router-dom';
 import Layout from './components/Layout';
+import PatientGate from './components/PatientGate';
+import ProtectedRoute from './components/ProtectedRoute';
 import Dashboard from './pages/Dashboard';
 import Vitals from './pages/Vitals';
 import IVMonitor from './pages/IVMonitor';
@@ -7,20 +9,29 @@ import Camera from './pages/Camera';
 import Alerts from './pages/Alerts';
 import DrugReport from './pages/DrugReport';
 import NotFound from './pages/NotFound';
+import Login from './pages/Login';
+import Register from './pages/Register';
 
-// Patient / Family view
 import PatientHome from './pages/patient/PatientHome';
 import TodaySessions from './pages/patient/TodaySessions';
 import BottleReport from './pages/patient/BottleReport';
 import PatientHistory from './pages/patient/PatientHistory';
 import ExportPanel from './pages/patient/ExportPanel';
-import PatientLayout from './components/PatientLayout';
 
 export default function App() {
   return (
     <Routes>
-      {/* Doctor View */}
-      <Route path="/" element={<Layout />}>
+      <Route path="/login" element={<Login />} />
+      <Route path="/register" element={<Register />} />
+
+      <Route
+        path="/"
+        element={
+          <ProtectedRoute variant="staff">
+            <Layout />
+          </ProtectedRoute>
+        }
+      >
         <Route index element={<Dashboard />} />
         <Route path="vitals" element={<Vitals />} />
         <Route path="iv-monitor" element={<IVMonitor />} />
@@ -29,8 +40,7 @@ export default function App() {
         <Route path="drug-report" element={<DrugReport />} />
       </Route>
 
-      {/* Patient / Family View */}
-      <Route path="/patient/:patientId" element={<PatientLayout />}>
+      <Route path="/patient/:patientId" element={<PatientGate />}>
         <Route index element={<PatientHome />} />
         <Route path="today" element={<TodaySessions />} />
         <Route path="bottle/:sessionId" element={<BottleReport />} />

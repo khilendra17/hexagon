@@ -1,8 +1,19 @@
 const BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
 
+function authHeaders() {
+  try {
+    const raw = localStorage.getItem('vitaflow_auth');
+    if (!raw) return {};
+    const { token } = JSON.parse(raw);
+    return token ? { Authorization: `Bearer ${token}` } : {};
+  } catch {
+    return {};
+  }
+}
+
 async function apiFetch(path, options = {}) {
   const res = await fetch(`${BASE_URL}${path}`, {
-    headers: { 'Content-Type': 'application/json', ...options.headers },
+    headers: { 'Content-Type': 'application/json', ...authHeaders(), ...options.headers },
     ...options,
   });
   if (!res.ok) throw new Error(`API ${path} failed: ${res.status}`);

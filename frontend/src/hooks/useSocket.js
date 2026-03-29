@@ -8,19 +8,26 @@ import { socket } from '../socket';
  */
 export function useSocket() {
   const [connected, setConnected] = useState(socket.connected);
+  const [reconnecting, setReconnecting] = useState(false);
 
   useEffect(() => {
-    const onConnect    = () => setConnected(true);
-    const onDisconnect = () => setConnected(false);
-    socket.on('connect',    onConnect);
+    const onConnect = () => {
+      setConnected(true);
+      setReconnecting(false);
+    };
+    const onDisconnect = () => {
+      setConnected(false);
+      setReconnecting(true);
+    };
+    socket.on('connect', onConnect);
     socket.on('disconnect', onDisconnect);
     return () => {
-      socket.off('connect',    onConnect);
+      socket.off('connect', onConnect);
       socket.off('disconnect', onDisconnect);
     };
   }, []);
 
-  return { socket, connected };
+  return { socket, connected, reconnecting: reconnecting && !connected };
 }
 
 export default useSocket;

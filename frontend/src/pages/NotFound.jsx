@@ -9,9 +9,14 @@ export default function NotFound() {
         The route you requested doesn't exist in VitaFlow AI. 
         Check the URL or return to dashboard.
       </p>
-      <Link to="/" className="not-found-link">
-        ← Return to Dashboard
-      </Link>
+      <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap', justifyContent: 'center' }}>
+        <Link to="/login" className="not-found-link">
+          Sign in
+        </Link>
+        <Link to="/" className="not-found-link">
+          ← Dashboard
+        </Link>
+      </div>
     </div>
   );
 }

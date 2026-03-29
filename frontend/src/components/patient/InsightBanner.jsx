@@ -1,19 +1,14 @@
 /**
  * InsightBanner.jsx
- * Single-line AI insight strip shown at the top of PatientHome.
- * Polls GET /api/insights and subscribes to `insight:update` socket.
+ * Plain-language drug response strip (PRD §12.3 / §8.7).
  */
-import { useInsights } from '../../hooks/useInsights';
-
 const LEVEL_STYLES = {
-  normal:   { bg: 'var(--blue-bg)',   border: 'var(--blue)',   color: 'var(--blue-dark)',   icon: '💡' },
-  warning:  { bg: 'var(--amber-bg)',  border: 'var(--amber)',  color: '#92600A',             icon: '⚠️' },
-  critical: { bg: 'var(--red-bg)',    border: 'var(--red)',    color: 'var(--red-dark)',     icon: '🔴' },
+  normal: { bg: 'var(--blue-bg)', border: 'var(--blue)', color: 'var(--blue-dark)', icon: '💡' },
+  warning: { bg: 'var(--amber-bg)', border: 'var(--amber)', color: '#92600A', icon: '⚠️' },
+  critical: { bg: 'var(--red-bg)', border: 'var(--red)', color: 'var(--red-dark)', icon: '🔴' },
 };
 
-export default function InsightBanner({ patientId }) {
-  const { insight, isLoading } = useInsights(patientId);
-
+export default function InsightBanner({ insight, isLoading }) {
   if (isLoading || !insight?.message) return null;
 
   const level = insight.level || 'normal';
