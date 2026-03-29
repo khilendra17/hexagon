@@ -1,4 +1,4 @@
-import { NavLink, Outlet, useNavigate } from 'react-router-dom';
+import { NavLink, Outlet, useNavigate, useLocation } from 'react-router-dom';
 import { usePatientContext } from '../context/PatientContext.jsx';
 import { useAlerts } from '../hooks/useAlerts.js';
 
@@ -15,10 +15,17 @@ export default function Layout() {
   const { patients, selectedPatientId, setSelectedPatientId } = usePatientContext();
   const { unresolvedCount } = useAlerts(null); // global alerts count
   const navigate = useNavigate();
+  const loc = useLocation();
 
   function handlePatientClick(id) {
     setSelectedPatientId(id);
     navigate('/');
+  }
+
+  function switchView(view) {
+    localStorage.setItem('vitaflow_view', view);
+    if (view === 'patient') navigate('/patient/rahul-sharma');
+    else navigate('/');
   }
 
   return (
@@ -30,6 +37,20 @@ export default function Layout() {
           <span className="navbar-live-dot" />
         </div>
         <div className="navbar-right">
+          <div className="view-switcher">
+            <button
+              className={`view-pill${!loc.pathname.startsWith('/patient') ? ' active' : ''}`}
+              onClick={() => switchView('doctor')}
+            >
+              Doctor View
+            </button>
+            <button
+              className={`view-pill${loc.pathname.startsWith('/patient') ? ' active' : ''}`}
+              onClick={() => switchView('patient')}
+            >
+              Patient View
+            </button>
+          </div>
           <span className="navbar-ward">Ward 3B</span>
           <div className="navbar-bell" onClick={() => navigate('/alerts')}>
             <BellIcon />

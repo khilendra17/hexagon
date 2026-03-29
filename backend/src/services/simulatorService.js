@@ -4,8 +4,9 @@
  * Random walks with occasional anomalies so data feels real.
  */
 import Vitals from '../models/Vitals.js';
+import BottleSession from '../models/BottleSession.js';
 import { evaluate } from './alertService.js';
-import { emitVitalsNew, emitIVUpdate } from '../sockets/index.js';
+import { emitVitalsNew, emitIVUpdate, emitSessionUpdate } from '../sockets/index.js';
 
 // In-memory IV state per patient (patientId → state obj)
 const ivState = new Map();
@@ -127,7 +128,25 @@ async function tick(io) {
 
     // Alert engine (non-blocking)
     evaluate(io, vitalsData).catch(() => {});
+
+    // Append to ongoing BottleSession vitalsTimeline (non-blocking)
+    appendToOngoingSession(io, id, vitalsData).catch(() => {});
   }
+}
+
+async function appendToOngoingSession(io, patientId, vitalsData) {
+  // Only try if MongoDB is connected
+  try {
+    const mongoose = (await import('mongoose')).default;
+    if (mongoose.connection.readyState !== 1) return;
+    const entry = { timestamp: vitalsData.timestamp, heartRate: vitalsData.heartRate, spo2: vitalsData.spo2 };
+    const session = await BottleSession.findOneAndUpdate(
+      { patientId: 'rahul-sharma', status: 'ongoing' },
+      { $push: { vitalsTimeline: entry } },
+      { new: true, fields: { _id: 1 } }
+    );
+    if (session) emitSessionUpdate(io, session._id.toString(), entry);
+  } catch (_) { /* silent */ }
 }
 
 let intervalHandle = null;

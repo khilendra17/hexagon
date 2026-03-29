@@ -31,11 +31,21 @@ export function emitAlertNew(io, alert) {
 
 export function emitIVUpdate(io, data) {
   if (io) {
-    io.emit('iv_update', data);        // frontend hook alias
+    io.emit('iv_update', data);
     io.emit('iv:update', data);
   }
 }
 
 export function emitInsightUpdate(io, data) {
   if (io) io.emit('insight:update', data);
+}
+
+// PRD §11.3 — iv:vision event (AI vision status)
+export function emitIVVision(io, data) {
+  if (io) io.emit('iv:vision', data);
+}
+
+// PRD §11.3 — session:update event
+export function emitSessionUpdate(io, sessionId, vitalsEntry) {
+  if (io) io.emit('session:update', { sessionId, vitalsTimeline: vitalsEntry });
 }

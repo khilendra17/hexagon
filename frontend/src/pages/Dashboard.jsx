@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import {
   LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer
@@ -7,6 +7,9 @@ import { usePatientContext } from '../context/PatientContext.jsx';
 import { useVitals } from '../hooks/useVitals.js';
 import { useIV } from '../hooks/useIV.js';
 import { useAlerts } from '../hooks/useAlerts.js';
+import { useBottleSessions } from '../hooks/useBottleSessions.js';
+
+const API = import.meta.env.VITE_API_URL || 'http://localhost:5000';
 
 /* ── Local mock helpers (used only when backend is unavailable) ── */
 function genSparkline(base, range, count = 8) {
@@ -31,6 +34,7 @@ export default function Dashboard() {
   const { vitals, latest, loading: vitalsLoading } = useVitals(selectedPatientId);
   const { ivData } = useIV(selectedPatientId);
   const { alerts } = useAlerts(selectedPatientId);
+  const { sessions: bottleSessions, refetch: refetchSessions } = useBottleSessions('rahul-sharma');
 
   // Fallback local simulation when backend isn't ready yet
   const [localHr, setLocalHr] = useState(78);
@@ -305,6 +309,139 @@ export default function Dashboard() {
           </div>
         </div>
       </div>
+
+      {/* ── Row 5: Today's Bottle Sessions ── */}
+      <div className="card" style={{ marginTop: 20 }}>
+        <div className="card-label" style={{ marginBottom: 12 }}>Today's Bottle Sessions — Rahul Sharma</div>
+        <div className="bottle-slots-row">
+          {[1, 2, 3].map((n) => {
+            const s = bottleSessions.find((x) => x.bottleNumber === n);
+            if (!s) {
+              return (
+                <div key={n} className="bottle-slot not-started">
+                  <div className="bottle-slot-num">Bottle {n}</div>
+                  <span style={{ color: 'var(--text-muted)', fontSize: 12 }}>Not started</span>
+                </div>
+              );
+            }
+            return <BottleSessionRow key={n} session={s} refetch={refetchSessions} vitals={latest} />;
+          })}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ── Row 5: Bottle Session Slot ── */
+function sessionElapsed(startTime) {
+  if (!startTime) return '—';
+  const ms = Date.now() - new Date(startTime).getTime();
+  const h = Math.floor(ms / 3600000);
+  const m = Math.floor((ms % 3600000) / 60000);
+  return h > 0 ? `${h}h ${m}m` : `${m}m`;
+}
+
+function AddDrugModal({ sessionId, onClose, onDone }) {
+  const [name, setName] = useState('');
+  const [dosageMg, setDosageMg] = useState('');
+  const [saving, setSaving] = useState(false);
+
+  async function submit() {
+    if (!name) return;
+    setSaving(true);
+    try {
+      await fetch(`${API}/api/sessions/${sessionId}/inject-drug`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name, dosageMg: Number(dosageMg), injectedBy: 'Dr. Anjali Mehta' }),
+      });
+      onDone();
+    } catch (_) {}
+    setSaving(false);
+  }
+
+  return (
+    <div className="modal-overlay" onClick={onClose}>
+      <div className="modal-box" onClick={(e) => e.stopPropagation()}>
+        <div className="modal-title">Add Drug</div>
+        <div className="modal-body">
+          <label className="modal-label">Drug Name
+            <input className="modal-input" value={name} onChange={(e) => setName(e.target.value)} placeholder="e.g. Paracetamol" />
+          </label>
+          <label className="modal-label" style={{ marginTop: 12 }}>Dosage (mg)
+            <input className="modal-input" type="number" value={dosageMg} onChange={(e) => setDosageMg(e.target.value)} placeholder="e.g. 500" />
+          </label>
+        </div>
+        <div className="modal-actions">
+          <button className="btn btn-ghost" onClick={onClose}>Cancel</button>
+          <button className="btn btn-primary" onClick={submit} disabled={saving || !name}>
+            {saving ? 'Injecting...' : 'Inject Now'}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function BottleSessionRow({ session, refetch, vitals }) {
+  const [showDrug, setShowDrug] = useState(false);
+  const [ending, setEnding] = useState(false);
+  const id = session?._id?.toString?.() || session?._id;
+  const { status, bottleNumber, startTime, drugResponse, drug } = session;
+
+  const latestHr = vitals?.heartRate;
+  const latestSpo2 = vitals?.spo2;
+
+  async function handleEnd() {
+    setEnding(true);
+    try {
+      await fetch(`${API}/api/sessions/${id}/end`, { method: 'POST' });
+      refetch();
+    } catch (_) {}
+    setEnding(false);
+  }
+
+  if (status === 'completed') {
+    const score = drugResponse?.efficacyScore;
+    const scoreColor = score >= 70 ? '#27A96C' : score >= 40 ? '#F4A100' : '#D93025';
+    return (
+      <div className="bottle-slot completed">
+        <div className="bottle-slot-num">Bottle {bottleNumber}</div>
+        {score != null && (
+          <span className="bottle-score-pill" style={{ background: '#E6F6F0', color: scoreColor }}>
+            Efficacy {score}% · {drugResponse.responseStatus}
+          </span>
+        )}
+        <Link to={`/patient/rahul-sharma/bottle/${id}`} className="btn-text" style={{ marginLeft: 'auto' }}>View Report →</Link>
+      </div>
+    );
+  }
+
+  if (status === 'ongoing') {
+    return (
+      <>
+        {showDrug && (
+          <AddDrugModal sessionId={id} onClose={() => setShowDrug(false)} onDone={() => { setShowDrug(false); refetch(); }} />
+        )}
+        <div className="bottle-slot ongoing">
+          <div className="bottle-slot-num">Bottle {bottleNumber}</div>
+          <span className="bottle-elapsed">{sessionElapsed(startTime)}</span>
+          {latestHr && <span className="bottle-mini-vital">HR {Math.round(latestHr)}</span>}
+          {latestSpo2 && <span className="bottle-mini-vital">SpO₂ {latestSpo2.toFixed(1)}%</span>}
+          {!drug?.name && <button className="btn btn-ghost" style={{ padding: '4px 10px', fontSize: 12 }} onClick={() => setShowDrug(true)}>Add Drug</button>}
+          <button className="btn" style={{ padding: '4px 10px', fontSize: 12, borderColor: '#D93025', color: '#D93025', marginLeft: 4, background: 'none' }} onClick={handleEnd} disabled={ending}>
+            {ending ? 'Ending...' : 'End Bottle'}
+          </button>
+        </div>
+      </>
+    );
+  }
+
+  // Not started
+  return (
+    <div className="bottle-slot not-started">
+      <div className="bottle-slot-num">Bottle {bottleNumber}</div>
+      <span style={{ color: 'var(--text-muted)', fontSize: 12 }}>Not started</span>
     </div>
   );
 }
