@@ -21,34 +21,39 @@ function distTo75(hr) {
   return Math.abs(hr - 75);
 }
 
-function buildInsight(r) {
-  const parts = [];
-  if (r.responseDelayMins != null) {
-    parts.push(
-      `First response signal at ${r.responseDelayMins.toFixed(1)} minutes after IV start.`
-    );
-  } else {
-    parts.push("No clear response signal in the 30-minute window.");
+const NO_RESPONSE_INSIGHT =
+  "No measurable response to IV administration detected within the observation window.";
+
+/**
+ * Deterministic plain-language insight from a drug-curve result (output of compute()).
+ * Never returns undefined.
+ */
+export function generateInsight(curveResult) {
+  if (!curveResult || typeof curveResult !== "object") {
+    return NO_RESPONSE_INSIGHT;
   }
-  if (r.improvement && (r.improvement.heartRate != null || r.improvement.spo2 != null)) {
-    const dh =
-      r.improvement.heartRate != null
-        ? `${r.improvement.heartRate > 0 ? "+" : ""}${r.improvement.heartRate.toFixed(1)}`
-        : "—";
-    const ds =
-      r.improvement.spo2 != null
-        ? `${r.improvement.spo2 > 0 ? "+" : ""}${r.improvement.spo2.toFixed(1)}`
-        : "—";
-    parts.push(`Mean change vs baseline: HR ${dh} bpm, SpO₂ ${ds} pp.`);
+
+  const xRaw = curveResult.responseDelayMins;
+  const yRaw = curveResult.stabilizationMins;
+
+  if (xRaw == null || Number.isNaN(Number(xRaw))) {
+    return NO_RESPONSE_INSIGHT;
   }
-  if (r.stabilizationMins != null) {
-    parts.push(
-      `Vitals stabilised by ${r.stabilizationMins.toFixed(1)} minutes from IV start.`
-    );
-  } else {
-    parts.push("Stabilisation criteria not met within the window.");
+
+  const x = Number(xRaw).toFixed(1);
+
+  if (yRaw == null || Number.isNaN(Number(yRaw))) {
+    return `Response detected at ${x} minutes. Stabilisation not achieved within the 30-minute observation window.`;
   }
-  return parts.join(" ");
+
+  const yNum = Number(yRaw);
+  const y = yNum.toFixed(1);
+
+  if (yNum < 20) {
+    return `Patient responded within ${x} minutes. Vitals stabilised at ${y} minutes after IV start.`;
+  }
+
+  return `Patient showed initial response at ${x} minutes but required extended time to stabilise (${y} minutes).`;
 }
 
 export async function compute(ivStartTime) {
@@ -141,7 +146,7 @@ export async function compute(ivStartTime) {
     stabilizationMins,
     vitalsTimeline,
   };
-  result.insight = buildInsight(result);
+  result.insight = generateInsight(result);
   lastResult = result;
   return result;
 }

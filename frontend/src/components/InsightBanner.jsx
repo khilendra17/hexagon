@@ -1,5 +1,5 @@
 export default function InsightBanner({ text }) {
-  if (!text) return null;
+  if (text == null || String(text).trim() === '') return null;
   return (
     <div
       className="insight-banner"
