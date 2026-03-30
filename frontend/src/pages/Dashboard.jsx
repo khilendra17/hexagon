@@ -7,15 +7,17 @@ import { MOCK_PATIENTS, MOCK_ALERTS } from '../utils/formatVitals';
 
 export default function Dashboard() {
   const [patients, setPatients] = useState(MOCK_PATIENTS);
+  const [time, setTime] = useState(new Date());
 
-  // 🔥 PLAN DETECTION
   const plan = localStorage.getItem('plan') || 'basic';
 
   const unacked = MOCK_ALERTS.filter((a) => !a.acked).length;
 
-  // Simulate live data
+  // Live simulation
   useEffect(() => {
     const tick = setInterval(() => {
+      setTime(new Date());
+
       setPatients((prev) =>
         prev.map((p) => ({
           ...p,
@@ -25,6 +27,7 @@ export default function Dashboard() {
         }))
       );
     }, 2000);
+
     return () => clearInterval(tick);
   }, []);
 
@@ -44,17 +47,28 @@ export default function Dashboard() {
   return (
     <div className="app-shell">
       <Sidebar alertCount={unacked} />
+
       <div className="main-content">
         <TopBar title="ICU DASHBOARD — WARD 3" />
 
         <div className="page-body">
 
-          {/* PLAN INDICATOR */}
+          {/* SYSTEM STATUS */}
+          <div style={{ fontSize: 12, color: 'lime', marginBottom: 6 }}>
+            ● System Status: All Devices Connected
+          </div>
+
+          {/*LAST UPDATED */}
+          <div style={{ fontSize: 10, color: 'var(--text-muted)', marginBottom: 10 }}>
+            Last Updated: {time.toLocaleTimeString()}
+          </div>
+
+          {/* PLAN */}
           <div style={{ marginBottom: 12, fontSize: 12, color: 'var(--text-muted)' }}>
             Current Plan: <strong style={{ color: '#00d4ff' }}>{plan.toUpperCase()}</strong>
           </div>
 
-          {/* Stats strip */}
+          {/* Stats */}
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 12, marginBottom: 24 }}>
             {[
               { label: 'TOTAL PATIENTS', val: stats.total, color: 'var(--accent-teal)' },
@@ -74,11 +88,13 @@ export default function Dashboard() {
             ))}
           </div>
 
-          {/* Page header */}
+          {/* Header */}
           <div className="page-header">
             <div>
               <div className="page-heading">ACTIVE PATIENTS</div>
-              <div className="page-subhead">{patients.length} patients · Real-time monitoring active</div>
+              <div className="page-subhead">
+                {patients.length} patients · Real-time monitoring active
+              </div>
             </div>
             <div className="live-indicator">
               <span className="live-dot" />
@@ -93,7 +109,7 @@ export default function Dashboard() {
             ))}
           </div>
 
-          {/* PREMIUM FEATURE: ALERTS */}
+          {/* 🔥 PREMIUM ALERTS */}
           {plan === 'premium' ? (
             <div>
               <div style={{ fontFamily: 'var(--mono)', fontSize: 11, color: 'var(--text-muted)', marginBottom: 12 }}>
@@ -106,9 +122,27 @@ export default function Dashboard() {
               <div style={{ fontSize: 14, marginBottom: 8 }}>
                 🔒 Alerts & Advanced Monitoring Locked
               </div>
+
               <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>
                 Upgrade to Premium to access alerts, logs, and AI insights
               </div>
+
+              {/* 🔥 UPGRADE BUTTON */}
+              <button
+                onClick={() => {
+                  localStorage.setItem("plan", "premium");
+                  window.location.reload();
+                }}
+                style={{
+                  marginTop: 10,
+                  padding: "8px 12px",
+                  background: "#00d4ff",
+                  border: "none",
+                  cursor: "pointer"
+                }}
+              >
+                Upgrade to Premium
+              </button>
             </div>
           )}
 
