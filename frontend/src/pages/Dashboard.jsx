@@ -1,17 +1,19 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect } from 'react';
 import Sidebar from '../components/Sidebar';
 import TopBar from '../components/TopBar';
 import PatientCard from '../components/PatientCard';
 import AlertsPanel from '../components/AlertsPanel';
 import { MOCK_PATIENTS, MOCK_ALERTS } from '../utils/formatVitals';
-import { useVitals } from '../hooks/useSocket';
 
 export default function Dashboard() {
   const [patients, setPatients] = useState(MOCK_PATIENTS);
-  const [liveMap, setLiveMap] = useState({});
+
+  // 🔥 PLAN DETECTION
+  const plan = localStorage.getItem('plan') || 'basic';
+
   const unacked = MOCK_ALERTS.filter((a) => !a.acked).length;
 
-  // Simulate live data ticks
+  // Simulate live data
   useEffect(() => {
     const tick = setInterval(() => {
       setPatients((prev) =>
@@ -44,7 +46,13 @@ export default function Dashboard() {
       <Sidebar alertCount={unacked} />
       <div className="main-content">
         <TopBar title="ICU DASHBOARD — WARD 3" />
+
         <div className="page-body">
+
+          {/* PLAN INDICATOR */}
+          <div style={{ marginBottom: 12, fontSize: 12, color: 'var(--text-muted)' }}>
+            Current Plan: <strong style={{ color: '#00d4ff' }}>{plan.toUpperCase()}</strong>
+          </div>
 
           {/* Stats strip */}
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 12, marginBottom: 24 }}>
@@ -56,8 +64,12 @@ export default function Dashboard() {
               { label: 'STABLE', val: stats.stable, color: 'var(--accent-green)' },
             ].map((s) => (
               <div key={s.label} className="card" style={{ padding: '14px 16px', textAlign: 'center' }}>
-                <div style={{ fontFamily: 'var(--mono)', fontSize: 28, fontWeight: 700, color: s.color, lineHeight: 1 }}>{s.val}</div>
-                <div style={{ fontFamily: 'var(--mono)', fontSize: 9, color: 'var(--text-muted)', letterSpacing: '0.12em', marginTop: 6 }}>{s.label}</div>
+                <div style={{ fontFamily: 'var(--mono)', fontSize: 28, fontWeight: 700, color: s.color }}>
+                  {s.val}
+                </div>
+                <div style={{ fontFamily: 'var(--mono)', fontSize: 9, color: 'var(--text-muted)', marginTop: 6 }}>
+                  {s.label}
+                </div>
               </div>
             ))}
           </div>
@@ -77,17 +89,28 @@ export default function Dashboard() {
           {/* Patient grid */}
           <div className="dashboard-grid" style={{ marginBottom: 28 }}>
             {sorted.map((p) => (
-              <PatientCard key={p.patientId} patient={p} liveData={liveMap[p.patientId]} />
+              <PatientCard key={p.patientId} patient={p} />
             ))}
           </div>
 
-          {/* Alerts strip */}
-          <div>
-            <div style={{ fontFamily: 'var(--mono)', fontSize: 11, color: 'var(--text-muted)', letterSpacing: '0.12em', textTransform: 'uppercase', marginBottom: 12 }}>
-              ACTIVE ALERTS ({unacked})
+          {/* PREMIUM FEATURE: ALERTS */}
+          {plan === 'premium' ? (
+            <div>
+              <div style={{ fontFamily: 'var(--mono)', fontSize: 11, color: 'var(--text-muted)', marginBottom: 12 }}>
+                ACTIVE ALERTS ({unacked})
+              </div>
+              <AlertsPanel compact />
             </div>
-            <AlertsPanel compact />
-          </div>
+          ) : (
+            <div className="card" style={{ padding: 20, textAlign: 'center' }}>
+              <div style={{ fontSize: 14, marginBottom: 8 }}>
+                🔒 Alerts & Advanced Monitoring Locked
+              </div>
+              <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>
+                Upgrade to Premium to access alerts, logs, and AI insights
+              </div>
+            </div>
+          )}
 
         </div>
       </div>
