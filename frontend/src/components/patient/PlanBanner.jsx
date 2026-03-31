@@ -5,20 +5,27 @@
  */
 import { usePlan } from '../../hooks/usePlan.js';
 
-const BASIC_FEATURES = [
-  { icon: '❤️', label: 'Heart Rate (live)' },
-  { icon: '🩸', label: 'SpO₂ Saturation (live)' },
-  { icon: '💧', label: 'IV Drip Status' },
-  { icon: '📋', label: 'Today\'s Sessions' },
-  { icon: '📜', label: 'Treatment History' },
+const BASIC_INCLUDED = [
+  { icon: '❤️', label: 'Heart Rate monitoring' },
+  { icon: '🩸', label: 'SpO₂ (oxygen level)' },
+  { icon: '💧', label: 'IV Drip monitoring' },
+  { icon: '🎥', label: 'Patient live streaming' },
 ];
 
-const PREMIUM_FEATURES = [
-  { icon: '📊', label: 'Drug Response Curves' },
-  { icon: '🤖', label: 'AI-Powered Health Insights' },
-  { icon: '📈', label: 'Efficacy Scoring' },
-  { icon: '📤', label: 'Export & Share Reports' },
-  { icon: '🔔', label: 'Critical Alerts Feed' },
+const BASIC_EXCLUDED = [
+  { icon: '⛔', label: 'Drug impact curve' },
+  { icon: '⛔', label: 'Graphs / analytics' },
+  { icon: '⛔', label: 'Smart suggestions (avoid specific drugs)' },
+];
+
+const PREMIUM_PLUS = [
+  { icon: '📉', label: 'Drug impact curve' },
+  { icon: '📊', label: 'Graphs / analytics' },
+  { icon: '🧠', label: 'Smart suggestions (avoid specific drugs)' },
+  { icon: '🩺', label: 'Doctor-specific features' },
+  { icon: '🔐', label: 'Doctor ID-based access' },
+  { icon: '🖥️', label: 'Doctor dashboard + login window' },
+  { icon: '⚙️', label: 'Plan-based access control (Basic / Premium)' },
 ];
 
 export default function PlanBanner() {
@@ -34,10 +41,20 @@ export default function PlanBanner() {
           <span className="plan-tier-badge basic-badge">Basic Plan</span>
           {!isPremium && <span className="plan-tier-current-tag">✓ Your Plan</span>}
         </div>
-        <p className="plan-tier-desc">Essential monitoring for patients &amp; family.</p>
+        <p className="plan-tier-desc">Essential real-time monitoring for patients and family.</p>
+        <div className="plan-feature-subtitle">Includes</div>
         <ul className="plan-feature-list">
-          {BASIC_FEATURES.map((f) => (
+          {BASIC_INCLUDED.map((f) => (
             <li key={f.label} className="plan-feature-item">
+              <span className="plan-feature-icon">{f.icon}</span>
+              <span>{f.label}</span>
+            </li>
+          ))}
+        </ul>
+        <div className="plan-feature-subtitle">Does not include</div>
+        <ul className="plan-feature-list">
+          {BASIC_EXCLUDED.map((f) => (
+            <li key={f.label} className="plan-feature-item excluded">
               <span className="plan-feature-icon">{f.icon}</span>
               <span>{f.label}</span>
             </li>
@@ -51,15 +68,16 @@ export default function PlanBanner() {
           <span className="plan-tier-badge premium-badge">Premium Plan ★</span>
           {isPremium && <span className="plan-tier-current-tag">✓ Your Plan</span>}
         </div>
-        <p className="plan-tier-desc">Full clinical data + AI analysis.</p>
+        <p className="plan-tier-desc">Everything in Basic, plus analytics, doctor tools, and recommendations.</p>
+        <div className="plan-feature-subtitle">Includes everything in Basic +</div>
         <ul className="plan-feature-list">
-          {BASIC_FEATURES.map((f) => (
+          {BASIC_INCLUDED.map((f) => (
             <li key={f.label} className="plan-feature-item included">
               <span className="plan-feature-icon">✓</span>
               <span>{f.label}</span>
             </li>
           ))}
-          {PREMIUM_FEATURES.map((f) => (
+          {PREMIUM_PLUS.map((f) => (
             <li key={f.label} className={`plan-feature-item ${isPremium ? 'premium-highlight' : 'locked-feature'}`}>
               <span className="plan-feature-icon">{isPremium ? f.icon : '🔒'}</span>
               <span>{f.label}</span>
@@ -71,6 +89,10 @@ export default function PlanBanner() {
             Ask your doctor or nursing staff to upgrade to Premium access.
           </div>
         )}
+      </div>
+
+      <div className="plan-system-note">
+        Tiered health monitoring system: Basic covers live patient vitals and stream, while Premium adds advanced analytics, smart drug guidance, and doctor-controlled dashboard access.
       </div>
     </div>
   );
