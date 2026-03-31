@@ -997,12 +997,17 @@ a { color: inherit; text-decoration: none; }
    PATIENT PAGE SECTIONS
 ============================================================ */
 .patient-page {
-  max-width: 640px;
+  max-width: 760px;
   margin: 0 auto;
-  padding: 24px 20px 48px;
+  padding: 28px 20px 52px;
 }
 .patient-header {
-  margin-bottom: 28px;
+  margin-bottom: 22px;
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 18px;
 }
 .patient-name-large {
   font-size: 28px;
@@ -1014,21 +1019,21 @@ a { color: inherit; text-decoration: none; }
 .patient-info-sub {
   font-size: 14px;
   color: var(--text-secondary);
-  margin-bottom: 12px;
+  margin-bottom: 6px;
 }
 .last-updated {
   font-size: 12px;
   color: var(--text-muted);
-  margin-top: 8px;
+  margin-top: 4px;
 }
 .patient-section {
-  margin-bottom: 32px;
+  margin-bottom: 28px;
 }
 .patient-section-title {
-  font-size: 14px;
+  font-size: 15px;
   font-weight: 600;
   color: var(--text-primary);
-  margin-bottom: 14px;
+  margin-bottom: 12px;
   letter-spacing: -0.01em;
 }
 .patient-loading {
@@ -1100,8 +1105,8 @@ a { color: inherit; text-decoration: none; }
 .patient-prd-grid-top {
   display: grid;
   grid-template-columns: 1fr;
-  gap: 12px;
-  margin-bottom: 24px;
+  gap: 14px;
+  margin-bottom: 28px;
 }
 @media (min-width: 560px) {
   .patient-prd-grid-top {
@@ -1112,7 +1117,7 @@ a { color: inherit; text-decoration: none; }
   background: var(--bg-surface);
   border: 1px solid var(--border);
   border-radius: var(--radius);
-  padding: 16px;
+  padding: 18px;
   box-shadow: var(--shadow);
 }
 .patient-prd-stat-label {
@@ -1180,14 +1185,21 @@ a { color: inherit; text-decoration: none; }
 .patient-chart-wrap .recharts-cartesian-grid line {
   stroke: #e8ecf0;
 }
+.patient-chart-wrap {
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 14px 14px 6px;
+}
 .patient-chart-wrap .recharts-text {
   fill: var(--text-muted);
 }
 .patient-prd-split {
   display: grid;
   grid-template-columns: 1fr;
-  gap: 16px;
-  margin-bottom: 28px;
+  gap: 18px;
+  margin-bottom: 32px;
 }
 @media (min-width: 720px) {
   .patient-prd-split {

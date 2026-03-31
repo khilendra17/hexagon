@@ -1,7 +1,7 @@
 import { Routes, Route } from 'react-router-dom';
+import { Navigate } from 'react-router-dom';
 import Layout from './components/Layout';
 import ProtectedRoute from './components/ProtectedRoute';
-import ProtectedPatientRoute from './components/patient/ProtectedPatientRoute';
 import Dashboard from './pages/Dashboard';
 import Vitals from './pages/Vitals';
 import IVMonitor from './pages/IVMonitor';
@@ -11,7 +11,6 @@ import DrugReport from './pages/DrugReport';
 import NotFound from './pages/NotFound';
 import Login from './pages/Login';
 import Register from './pages/Register';
-import PatientLogin from './pages/patient/PatientLogin';
 
 import PatientLayout from './components/PatientLayout';
 import PatientHome from './pages/patient/PatientHome';
@@ -43,17 +42,13 @@ export default function App() {
         <Route path="drug-report" element={<DrugReport />} />
       </Route>
 
-      {/* Patient/family portal — unprotected login entry */}
-      <Route path="/patient/login" element={<PatientLogin />} />
+      {/* Patient/family portal — direct entry */}
+      <Route path="/patient" element={<Navigate to="/patient/rahul-sharma" replace />} />
 
-      {/* Patient/family routes — plan session required */}
+      {/* Patient/family routes — direct access */}
       <Route
         path="/patient/:patientId"
-        element={
-          <ProtectedPatientRoute>
-            <PatientLayout />
-          </ProtectedPatientRoute>
-        }
+        element={<PatientLayout />}
       >
         <Route index element={<PatientHome />} />
         <Route path="today" element={<TodaySessions />} />

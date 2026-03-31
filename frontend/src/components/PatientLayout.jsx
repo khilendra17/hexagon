@@ -29,7 +29,7 @@ function ViewSwitcher() {
       if (isAuthenticated && patientInfo?.patientId) {
         navigate(`/patient/${patientInfo.patientId}`);
       } else {
-        navigate('/patient/login');
+        navigate(`/patient/${DEFAULT_SLUG}`);
       }
     } else {
       navigate('/');
@@ -59,7 +59,7 @@ export default function PatientLayout() {
   function handleSignOut() {
     if (isAuthenticated) {
       planLogout();
-      navigate('/patient/login');
+      navigate(`/patient/${DEFAULT_SLUG}`);
     } else {
       staffLogout();
       navigate('/login');
@@ -76,7 +76,7 @@ export default function PatientLayout() {
           className="patient-navbar-brand"
           onClick={() => navigate(`/patient/${patientId}`)}
         >
-          VitaFlow <span style={{ fontWeight: 400, color: 'var(--clinical-muted, #52606D)' }}>Family</span>
+          IV DRIP SYSTEM <span style={{ fontWeight: 400, color: 'var(--clinical-muted, #52606D)' }}>Family</span>
         </button>
         <ViewSwitcher />
         <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 10 }}>

@@ -5,7 +5,12 @@
  */
 import { useState } from 'react';
 
-const API = '';
+function resolveApiBase() {
+  const fromEnv = import.meta.env.VITE_API_URL;
+  return fromEnv || '';
+}
+
+const API_BASE = resolveApiBase();
 
 export default function GenerateCodeModal({ patientId, patientName, bedNumber, onClose }) {
   const [plan, setPlan]       = useState('basic');
@@ -24,7 +29,7 @@ export default function GenerateCodeModal({ patientId, patientName, bedNumber, o
   async function handleGenerate() {
     setLoading(true); setError('');
     try {
-      const res = await fetch(`${API}/api/patient-access/issue`, {
+      const res = await fetch(`${API_BASE}/api/patient-access/issue`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -33,7 +38,20 @@ export default function GenerateCodeModal({ patientId, patientName, bedNumber, o
           expiresAt: expiresAt(),
         }),
       });
-      const json = await res.json();
+
+      const contentType = res.headers.get('content-type') || '';
+      let json;
+      if (contentType.includes('application/json')) {
+        json = await res.json();
+      } else {
+        const raw = await res.text();
+        if (raw.trim().startsWith('<!DOCTYPE') || raw.trim().startsWith('<html')) {
+          throw new Error('Server returned HTML instead of JSON. Check backend route /api/patient-access/issue and VITE_API_URL.');
+        }
+        throw new Error('Server returned an unexpected response format.');
+      }
+
+      if (!res.ok) throw new Error(json?.error || `Request failed (${res.status}).`);
       if (!json.success) throw new Error(json.error);
       setResult(json.data);
     } catch (e) {
