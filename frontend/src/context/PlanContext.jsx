@@ -1,8 +1,17 @@
 import { createContext, useContext, useState, useEffect } from 'react';
 
-// In dev: VITE_API_URL is not set → '' → relative path → Vite proxy → localhost:5000
-// In prod: VITE_API_URL = 'https://your-backend.onrender.com' → absolute URL → backend directly
-const API_BASE = import.meta.env.VITE_API_URL || '';
+function resolveApiBase() {
+  const fromEnv = import.meta.env.VITE_API_URL;
+  if (fromEnv) return fromEnv;
+
+  // Local fallback so direct local runs don't accidentally hit frontend HTML routes.
+  if (typeof window !== 'undefined' && ['localhost', '127.0.0.1'].includes(window.location.hostname)) {
+    return 'http://localhost:5000';
+  }
+  return '';
+}
+
+const API_BASE = resolveApiBase();
 const SESSION_KEY = 'vitaflow_patient_session';
 
 const PlanContext = createContext(null);
@@ -41,7 +50,22 @@ export function PlanProvider({ children }) {
     } catch {
       throw new Error('Cannot reach server. Check that the backend is running and VITE_API_URL is set correctly.');
     }
-    const json = await res.json();
+    const contentType = res.headers.get('content-type') || '';
+    let json;
+
+    if (contentType.includes('application/json')) {
+      json = await res.json();
+    } else {
+      const raw = await res.text();
+      if (raw.trim().startsWith('<!DOCTYPE') || raw.trim().startsWith('<html')) {
+        throw new Error('Server returned HTML instead of API JSON. Check VITE_API_URL and backend route /api/patient-access/verify.');
+      }
+      throw new Error('Server returned an unexpected response format.');
+    }
+
+    if (!res.ok) {
+      throw new Error(json?.error || `Request failed (${res.status}).`);
+    }
     if (!json.success) throw new Error(json.error || 'Invalid or expired access code.');
 
     const { plan: p, patientId, patientName, bedNumber, accessCode: ac } = json.data;
