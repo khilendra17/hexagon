@@ -1,19 +1,23 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect } from 'react';
 import Sidebar from '../components/Sidebar';
 import TopBar from '../components/TopBar';
 import PatientCard from '../components/PatientCard';
 import AlertsPanel from '../components/AlertsPanel';
 import { MOCK_PATIENTS, MOCK_ALERTS } from '../utils/formatVitals';
-import { useVitals } from '../hooks/useSocket';
 
 export default function Dashboard() {
   const [patients, setPatients] = useState(MOCK_PATIENTS);
-  const [liveMap, setLiveMap] = useState({});
+  const [time, setTime] = useState(new Date());
+
+  const plan = localStorage.getItem('plan') || 'basic';
+
   const unacked = MOCK_ALERTS.filter((a) => !a.acked).length;
 
-  // Simulate live data ticks
+  // Live simulation
   useEffect(() => {
     const tick = setInterval(() => {
+      setTime(new Date());
+
       setPatients((prev) =>
         prev.map((p) => ({
           ...p,
@@ -23,6 +27,7 @@ export default function Dashboard() {
         }))
       );
     }, 2000);
+
     return () => clearInterval(tick);
   }, []);
 
@@ -42,11 +47,28 @@ export default function Dashboard() {
   return (
     <div className="app-shell">
       <Sidebar alertCount={unacked} />
+
       <div className="main-content">
         <TopBar title="ICU DASHBOARD — WARD 3" />
+
         <div className="page-body">
 
-          {/* Stats strip */}
+          {/* SYSTEM STATUS */}
+          <div style={{ fontSize: 12, color: 'lime', marginBottom: 6 }}>
+            ● System Status: All Devices Connected
+          </div>
+
+          {/*LAST UPDATED */}
+          <div style={{ fontSize: 10, color: 'var(--text-muted)', marginBottom: 10 }}>
+            Last Updated: {time.toLocaleTimeString()}
+          </div>
+
+          {/* PLAN */}
+          <div style={{ marginBottom: 12, fontSize: 12, color: 'var(--text-muted)' }}>
+            Current Plan: <strong style={{ color: '#00d4ff' }}>{plan.toUpperCase()}</strong>
+          </div>
+
+          {/* Stats */}
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 12, marginBottom: 24 }}>
             {[
               { label: 'TOTAL PATIENTS', val: stats.total, color: 'var(--accent-teal)' },
@@ -56,17 +78,23 @@ export default function Dashboard() {
               { label: 'STABLE', val: stats.stable, color: 'var(--accent-green)' },
             ].map((s) => (
               <div key={s.label} className="card" style={{ padding: '14px 16px', textAlign: 'center' }}>
-                <div style={{ fontFamily: 'var(--mono)', fontSize: 28, fontWeight: 700, color: s.color, lineHeight: 1 }}>{s.val}</div>
-                <div style={{ fontFamily: 'var(--mono)', fontSize: 9, color: 'var(--text-muted)', letterSpacing: '0.12em', marginTop: 6 }}>{s.label}</div>
+                <div style={{ fontFamily: 'var(--mono)', fontSize: 28, fontWeight: 700, color: s.color }}>
+                  {s.val}
+                </div>
+                <div style={{ fontFamily: 'var(--mono)', fontSize: 9, color: 'var(--text-muted)', marginTop: 6 }}>
+                  {s.label}
+                </div>
               </div>
             ))}
           </div>
 
-          {/* Page header */}
+          {/* Header */}
           <div className="page-header">
             <div>
               <div className="page-heading">ACTIVE PATIENTS</div>
-              <div className="page-subhead">{patients.length} patients · Real-time monitoring active</div>
+              <div className="page-subhead">
+                {patients.length} patients · Real-time monitoring active
+              </div>
             </div>
             <div className="live-indicator">
               <span className="live-dot" />
@@ -77,17 +105,46 @@ export default function Dashboard() {
           {/* Patient grid */}
           <div className="dashboard-grid" style={{ marginBottom: 28 }}>
             {sorted.map((p) => (
-              <PatientCard key={p.patientId} patient={p} liveData={liveMap[p.patientId]} />
+              <PatientCard key={p.patientId} patient={p} />
             ))}
           </div>
 
-          {/* Alerts strip */}
-          <div>
-            <div style={{ fontFamily: 'var(--mono)', fontSize: 11, color: 'var(--text-muted)', letterSpacing: '0.12em', textTransform: 'uppercase', marginBottom: 12 }}>
-              ACTIVE ALERTS ({unacked})
+          {/* 🔥 PREMIUM ALERTS */}
+          {plan === 'premium' ? (
+            <div>
+              <div style={{ fontFamily: 'var(--mono)', fontSize: 11, color: 'var(--text-muted)', marginBottom: 12 }}>
+                ACTIVE ALERTS ({unacked})
+              </div>
+              <AlertsPanel compact />
             </div>
-            <AlertsPanel compact />
-          </div>
+          ) : (
+            <div className="card" style={{ padding: 20, textAlign: 'center' }}>
+              <div style={{ fontSize: 14, marginBottom: 8 }}>
+                🔒 Alerts & Advanced Monitoring Locked
+              </div>
+
+              <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>
+                Upgrade to Premium to access alerts, logs, and AI insights
+              </div>
+
+              {/* 🔥 UPGRADE BUTTON */}
+              <button
+                onClick={() => {
+                  localStorage.setItem("plan", "premium");
+                  window.location.reload();
+                }}
+                style={{
+                  marginTop: 10,
+                  padding: "8px 12px",
+                  background: "#00d4ff",
+                  border: "none",
+                  cursor: "pointer"
+                }}
+              >
+                Upgrade to Premium
+              </button>
+            </div>
+          )}
 
         </div>
       </div>

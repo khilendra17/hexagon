@@ -8,16 +8,36 @@ import Alerts from './pages/Alerts';
 import Logs from './pages/Logs';
 import Settings from './pages/Settings';
 
+/**
+ * Auth Guard → checks login
+ */
 function AuthGuard({ children }) {
   const token = localStorage.getItem('smartiv_token');
   return token ? children : <Navigate to="/login" replace />;
 }
 
+/**
+ * Plan Guard → checks if user has premium access
+ */
+function PlanGuard({ children }) {
+  const plan = localStorage.getItem('plan') || 'basic';
+
+  if (plan === 'premium') {
+    return children;
+  }
+
+  // If basic user tries to access premium feature
+  return <Navigate to="/dashboard" replace />;
+}
+
+/**
+ * Root redirect
+ */
 function RootRedirect() {
   const token = localStorage.getItem('smartiv_token');
-  // If logged in, go to dashboard; otherwise go to the marketing site
+
   if (token) return <Navigate to="/dashboard" replace />;
-  // /site/ is served statically from public/site/index.html
+
   window.location.replace('/site/');
   return null;
 }
@@ -27,15 +47,62 @@ export default function App() {
     <BrowserRouter>
       <SocketProvider>
         <Routes>
+
+          {/* Public */}
           <Route path="/login" element={<Login />} />
           <Route path="/" element={<RootRedirect />} />
-          <Route path="/dashboard" element={<AuthGuard><Dashboard /></AuthGuard>} />
-          <Route path="/patients" element={<AuthGuard><Patients /></AuthGuard>} />
-          <Route path="/patient/:id" element={<AuthGuard><PatientDetail /></AuthGuard>} />
-          <Route path="/alerts" element={<AuthGuard><Alerts /></AuthGuard>} />
-          <Route path="/logs" element={<AuthGuard><Logs /></AuthGuard>} />
-          <Route path="/settings" element={<AuthGuard><Settings /></AuthGuard>} />
-          <Route path="*" element={<AuthGuard><Navigate to="/dashboard" replace /></AuthGuard>} />
+
+          {/* Protected Routes */}
+          <Route path="/dashboard" element={
+            <AuthGuard>
+              <Dashboard />
+            </AuthGuard>
+          } />
+
+          <Route path="/patients" element={
+            <AuthGuard>
+              <Patients />
+            </AuthGuard>
+          } />
+
+          <Route path="/patient/:id" element={
+            <AuthGuard>
+              <PatientDetail />
+            </AuthGuard>
+          } />
+
+          {/* PREMIUM ONLY FEATURES */}
+          <Route path="/alerts" element={
+            <AuthGuard>
+              <PlanGuard>
+                <Alerts />
+              </PlanGuard>
+            </AuthGuard>
+          } />
+
+          <Route path="/logs" element={
+            <AuthGuard>
+              <PlanGuard>
+                <Logs />
+              </PlanGuard>
+            </AuthGuard>
+          } />
+
+          <Route path="/settings" element={
+            <AuthGuard>
+              <PlanGuard>
+                <Settings />
+              </PlanGuard>
+            </AuthGuard>
+          } />
+
+          {/* Fallback */}
+          <Route path="*" element={
+            <AuthGuard>
+              <Navigate to="/dashboard" replace />
+            </AuthGuard>
+          } />
+
         </Routes>
       </SocketProvider>
     </BrowserRouter>

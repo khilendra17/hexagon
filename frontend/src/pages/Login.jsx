@@ -5,6 +5,7 @@ export default function Login() {
   const nav = useNavigate();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [plan, setPlan] = useState('basic'); // 🔥 NEW
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
@@ -37,12 +38,17 @@ export default function Login() {
         }
       }
 
+      // 🔥 SAVE TOKEN + PLAN
       localStorage.setItem('smartiv_token', token);
+      localStorage.setItem('plan', plan);
+
       localStorage.setItem('smartiv_user', JSON.stringify({
         name: email.split('@')[0].replace('.', ' ').replace(/\b\w/g, c => c.toUpperCase()),
         role: 'Physician',
         email,
+        plan // optional extra
       }));
+
       nav('/dashboard');
     } catch (err) {
       setError(err.message || 'Login failed.');
@@ -88,6 +94,7 @@ export default function Login() {
               autoComplete="email"
             />
           </div>
+
           <div className="form-group">
             <label className="form-label">Password</label>
             <input
@@ -100,7 +107,50 @@ export default function Login() {
               autoComplete="current-password"
             />
           </div>
+
           {error && <div className="form-error">{error}</div>}
+
+          {/* 🔥 PLAN SELECTION */}
+          <div className="form-group">
+            <label className="form-label">Select Service Plan</label>
+
+            <div style={{ display: "flex", gap: "10px" }}>
+              <button
+                type="button"
+                onClick={() => setPlan("basic")}
+                style={{
+                  flex: 1,
+                  padding: "10px",
+                  border: plan === "basic" ? "2px solid #00d4ff" : "1px solid #444",
+                  background: plan === "basic" ? "#0a1f2e" : "transparent",
+                  color: "#fff",
+                  cursor: "pointer"
+                }}
+              >
+                BASIC
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setPlan("premium")}
+                style={{
+                  flex: 1,
+                  padding: "10px",
+                  border: plan === "premium" ? "2px solid #00d4ff" : "1px solid #444",
+                  background: plan === "premium" ? "#0a1f2e" : "transparent",
+                  color: "#fff",
+                  cursor: "pointer"
+                }}
+              >
+                PREMIUM
+              </button>
+            </div>
+
+            <p style={{ fontSize: "12px", opacity: 0.7, marginTop: "5px" }}>
+              Basic: Monitoring only · Premium: Alerts, logs & advanced insights
+            </p>
+          </div>
+
           <button id="login-submit" className="btn-primary" type="submit" disabled={loading}>
             {loading ? 'AUTHENTICATING...' : 'SIGN IN →'}
           </button>
