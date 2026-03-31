@@ -8,6 +8,8 @@ import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContai
 import { MOCK_PATIENTS, generateHistory, generateDrugImpact, fmtHR, fmtSpO2, fmtFlow, statusColor } from '../utils/formatVitals';
 import { ArrowLeft } from 'lucide-react';
 
+const API_BASE = import.meta.env.VITE_API_URL || '';
+
 export default function PatientDetail() {
   const { id } = useParams();
   const nav = useNavigate();
@@ -45,7 +47,7 @@ export default function PatientDetail() {
     const newState = valve === 'OPEN' ? 'CLOSED' : 'OPEN';
     setSaving(true);
     try {
-      await fetch('/api/control/valve', {
+      await fetch(`${API_BASE}/api/control/valve`, {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ patientId: id, state: newState }),
       });
@@ -58,7 +60,7 @@ export default function PatientDetail() {
     const newRate = Math.max(0, Math.min(200, flowRate + delta));
     setFlowRate(newRate);
     try {
-      await fetch('/api/control/flow', {
+      await fetch(`${API_BASE}/api/control/flow`, {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ patientId: id, rate: newRate }),
       });

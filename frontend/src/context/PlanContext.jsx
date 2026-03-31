@@ -1,7 +1,8 @@
 import { createContext, useContext, useState, useEffect } from 'react';
 
-// Always use relative path so Vite proxy handles routing in dev,
-// and the deployed frontend hits its own origin in production.
+// In dev: VITE_API_URL is not set → '' → relative path → Vite proxy → localhost:5000
+// In prod: VITE_API_URL = 'https://your-backend.onrender.com' → absolute URL → backend directly
+const API_BASE = import.meta.env.VITE_API_URL || '';
 const SESSION_KEY = 'vitaflow_patient_session';
 
 const PlanContext = createContext(null);
@@ -32,13 +33,13 @@ export function PlanProvider({ children }) {
     const code = accessCode.trim().toUpperCase().slice(0, 6);
     let res;
     try {
-      res = await fetch('/api/patient-access/verify', {
+      res = await fetch(`${API_BASE}/api/patient-access/verify`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ accessCode: code }),
       });
     } catch {
-      throw new Error('Cannot reach server. Make sure the backend is running.');
+      throw new Error('Cannot reach server. Check that the backend is running and VITE_API_URL is set correctly.');
     }
     const json = await res.json();
     if (!json.success) throw new Error(json.error || 'Invalid or expired access code.');

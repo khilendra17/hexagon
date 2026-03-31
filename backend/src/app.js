@@ -26,8 +26,18 @@ const app = express();
 const server = http.createServer(app);
 const port = process.env.PORT || 5000;
 
-const corsOrigin = process.env.SOCKET_CORS_ORIGIN || 'http://localhost:5173';
-app.use(cors({ origin: corsOrigin }));
+// SOCKET_CORS_ORIGIN can be a comma-separated list for multiple allowed origins
+// e.g. "https://vitaflow.netlify.app,https://vitaflow.vercel.app"
+const rawOrigins = process.env.SOCKET_CORS_ORIGIN || 'http://localhost:5173';
+const corsOrigins = rawOrigins.split(',').map((o) => o.trim());
+app.use(cors({
+  origin: (origin, cb) => {
+    // Allow server-to-server (no origin) and any whitelisted origin
+    if (!origin || corsOrigins.includes(origin)) return cb(null, true);
+    cb(new Error(`CORS: ${origin} not allowed`));
+  },
+  credentials: true,
+}));
 app.use(express.json());
 
 // Setup Socket.io (must come before routes that emit)
@@ -87,6 +97,6 @@ app.get('/health', (_req, res) => {
 
   server.listen(port, () => {
     console.log(`VitaFlow AI backend running on http://localhost:${port}`);
-    console.log(`CORS origin: ${corsOrigin}`);
+    console.log(`CORS origins: ${corsOrigins.join(', ')}`);
   });
 })();
