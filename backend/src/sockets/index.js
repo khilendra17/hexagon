@@ -6,8 +6,13 @@ function jwtSecret() {
 }
 
 export function setupSockets(httpServer, app) {
+  const corsOrigins = (process.env.SOCKET_CORS_ORIGIN || "http://localhost:5173")
+    .split(",")
+    .map((s) => s.trim())
+    .filter(Boolean);
+
   const io = new Server(httpServer, {
-    cors: { origin: "*" },
+    cors: { origin: corsOrigins, credentials: true },
   });
 
   app.locals.io = io;
@@ -58,4 +63,11 @@ export function emitInsightUpdate(io, payload) {
   const patientId = payload?.patientId;
   if (patientId) io.to(`patient:${patientId}`).emit("insight:update", payload);
   io.to("role:doctor").emit("insight:update", payload);
+}
+
+export function emitVisionUpdate(io, payload) {
+  if (!io) return;
+  const patientId = payload?.patientId;
+  if (patientId) io.to(`patient:${patientId}`).emit("vision:update", payload);
+  io.to("role:doctor").emit("vision:update", payload);
 }

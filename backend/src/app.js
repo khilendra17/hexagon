@@ -23,7 +23,17 @@ const port = process.env.PORT || 4000;
 
 setupSockets(server, app);
 
-app.use(cors());
+const corsOrigins = (process.env.SOCKET_CORS_ORIGIN || "http://localhost:5173")
+  .split(",")
+  .map((s) => s.trim())
+  .filter(Boolean);
+
+app.use(
+  cors({
+    origin: corsOrigins,
+    credentials: true,
+  })
+);
 app.use(express.json());
 app.use("/api/vitals", vitalsRoutes);
 app.use("/api/events", eventRoutes);

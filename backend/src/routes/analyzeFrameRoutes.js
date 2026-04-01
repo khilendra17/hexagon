@@ -2,6 +2,7 @@ import express from "express";
 import multer from "multer";
 import { forwardFrameToAiService } from "../services/aiProxy.js";
 import authRequired from "../middleware/authRequired.js";
+import { emitVisionUpdate } from "../sockets/index.js";
 
 const upload = multer({
   storage: multer.memoryStorage(),
@@ -27,6 +28,12 @@ router.post(
       req.file.mimetype || "image/jpeg",
       req.file.originalname || "frame.jpg"
     );
+    // Side effect: notify frontend listeners.
+    emitVisionUpdate(req.app.locals.io, {
+      patientId: req.auth?.role === "patient" ? req.auth.userId : undefined,
+      ...result,
+      timestamp: new Date().toISOString(),
+    });
     return res.status(200).json(result);
   } catch (err) {
     return res.status(200).json({

@@ -1,4 +1,5 @@
 import { useLiveFeed } from "../hooks/useLiveFeed";
+import DrugCurveChart from "../components/DrugCurveChart";
 
 function severityColor(sev) {
   if (sev === "critical") return "crimson";
@@ -7,7 +8,7 @@ function severityColor(sev) {
 }
 
 export default function Dashboard() {
-  const { vitals, alerts, insight, connected } = useLiveFeed();
+  const { vitals, alerts, insight, vision, connected } = useLiveFeed();
   const latest = vitals?.[0];
 
   return (
@@ -36,8 +37,19 @@ export default function Dashboard() {
         <div style={{ marginTop: 14, padding: 12, borderRadius: 8, background: "#f0f9ff", border: "1px solid #bae6fd" }}>
           <div style={{ fontSize: 12, opacity: 0.7, marginBottom: 6 }}>Clinical insight</div>
           <div>{insight.insight}</div>
+          <div style={{ marginTop: 10 }}>
+            <DrugCurveChart payload={insight} />
+          </div>
         </div>
       )}
+
+      <div style={{ marginTop: 14, padding: 12, borderRadius: 8, border: "1px solid #e5e7eb" }}>
+        <div style={{ fontSize: 12, opacity: 0.7, marginBottom: 6 }}>IV vision status</div>
+        <div style={{ fontWeight: 700 }}>
+          {vision?.status ? vision.status : "unavailable"}
+        </div>
+        {vision?.message && <div style={{ fontSize: 12, opacity: 0.8 }}>{vision.message}</div>}
+      </div>
 
       <div style={{ display: "grid", gridTemplateColumns: "repeat(2, minmax(0, 1fr))", gap: 12, marginTop: 14 }}>
         <div style={{ border: "1px solid #e5e7eb", padding: 12, borderRadius: 8, minHeight: 220 }}>

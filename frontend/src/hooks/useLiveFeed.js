@@ -6,6 +6,7 @@ export function useLiveFeed() {
   const [vitals, setVitals] = useState([]);
   const [alerts, setAlerts] = useState([]);
   const [insight, setInsight] = useState(null);
+  const [vision, setVision] = useState(null);
   const [connected, setConnected] = useState(false);
 
   useEffect(() => {
@@ -21,12 +22,14 @@ export function useLiveFeed() {
     const onVitals = (p) => setVitals((prev) => [p, ...prev].slice(0, 200));
     const onAlert = (a) => setAlerts((prev) => [a, ...prev].slice(0, 200));
     const onInsight = (r) => setInsight(r);
+    const onVision = (v) => setVision(v);
 
     socket.on("connect", onConnect);
     socket.on("disconnect", onDisconnect);
     socket.on("vitals:new", onVitals);
     socket.on("alert:new", onAlert);
     socket.on("insight:update", onInsight);
+    socket.on("vision:update", onVision);
 
     (async () => {
       try {
@@ -51,10 +54,11 @@ export function useLiveFeed() {
       socket.off("vitals:new", onVitals);
       socket.off("alert:new", onAlert);
       socket.off("insight:update", onInsight);
+      socket.off("vision:update", onVision);
       socket.disconnect();
     };
   }, []);
 
-  return { vitals, alerts, insight, connected };
+  return { vitals, alerts, insight, vision, connected };
 }
 
