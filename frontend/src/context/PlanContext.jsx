@@ -1,4 +1,5 @@
-import { createContext, useContext, useState, useEffect } from 'react';
+/* eslint-disable react-refresh/only-export-components */
+import { createContext, useContext, useState } from 'react';
 
 function resolveApiBase() {
   const fromEnv = import.meta.env.VITE_API_URL;
@@ -17,26 +18,25 @@ const SESSION_KEY = 'vitaflow_patient_session';
 const PlanContext = createContext(null);
 
 export function PlanProvider({ children }) {
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [plan, setPlan] = useState(null);
-  const [patientInfo, setPatientInfo] = useState(null);
-
-  // Restore session on mount
-  useEffect(() => {
+  function readSavedSession() {
     try {
       const raw = sessionStorage.getItem(SESSION_KEY);
       if (raw) {
         const saved = JSON.parse(raw);
         if (saved?.plan && saved?.patientInfo) {
-          setPlan(saved.plan);
-          setPatientInfo(saved.patientInfo);
-          setIsAuthenticated(true);
+          return saved;
         }
       }
     } catch {
       sessionStorage.removeItem(SESSION_KEY);
     }
-  }, []);
+    return null;
+  }
+
+  const restored = readSavedSession();
+  const [isAuthenticated, setIsAuthenticated] = useState(Boolean(restored));
+  const [plan, setPlan] = useState(restored?.plan ?? null);
+  const [patientInfo, setPatientInfo] = useState(restored?.patientInfo ?? null);
 
   async function login(accessCode) {
     const code = accessCode.trim().toUpperCase().slice(0, 6);

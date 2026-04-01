@@ -94,7 +94,7 @@ export default function Login() {
           <div className="login-logo-icon">💉</div>
           <div className="login-logo-text">
             <div className="login-logo-title">IV DRIP SYSTEM</div>
-            <div className="login-logo-sub">IoT HEALTHCARE MONITORING</div>
+            <div className="login-logo-sub">IV DRIP MONITORING</div>
           </div>
         </div>
 

@@ -8,7 +8,6 @@ import SessionTimeline from '../../components/patient/SessionTimeline';
 import DrugResponseSummary from '../../components/patient/DrugResponseSummary';
 import PlanGate from '../../components/patient/PlanGate.jsx';
 import PremiumUpgradeCard from '../../components/patient/PremiumUpgradeCard.jsx';
-import { usePlan } from '../../hooks/usePlan.js';
 import { generateBottleSummary } from '../../utils/insightGenerator';
 
 const API = import.meta.env.VITE_API_URL || 'http://localhost:5000';
@@ -48,7 +47,6 @@ export default function BottleReport() {
   if (loading) return <div className="patient-page"><div className="patient-loading">Loading report...</div></div>;
   if (!session) return <div className="patient-page"><div className="patient-loading">Session not found.</div></div>;
 
-  const { isBasic } = usePlan();
   const summary = generateBottleSummary({ ...session, patientName: 'Rahul' });
 
   return (
