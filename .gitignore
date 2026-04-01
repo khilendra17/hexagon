@@ -1,3 +1,6 @@
+# Frontend is maintained on a separate branch — keep this checkout backend-only
+/frontend/
+
 # Dependencies
 node_modules/
 
