@@ -55,3 +55,6 @@ Desktop.ini
 # Misc
 *.local
 .cache/
+
+# Archives
+*.zip
