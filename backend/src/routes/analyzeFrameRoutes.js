@@ -1,6 +1,7 @@
 import express from "express";
 import multer from "multer";
 import { forwardFrameToAiService } from "../services/aiProxy.js";
+import authRequired from "../middleware/authRequired.js";
 
 const upload = multer({
   storage: multer.memoryStorage(),
@@ -9,7 +10,11 @@ const upload = multer({
 
 const router = express.Router();
 
-router.post("/", upload.single("frame"), async (req, res) => {
+router.post(
+  "/",
+  authRequired,
+  upload.single("frame"),
+  async (req, res) => {
   try {
     if (!req.file?.buffer) {
       return res.status(200).json({

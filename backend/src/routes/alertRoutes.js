@@ -1,9 +1,10 @@
 import express from "express";
+import authRequired from "../middleware/authRequired.js";
 import { createAlert, listAlerts } from "../controllers/alertController.js";
 
 const router = express.Router();
 
-router.post("/", async (req, res) => {
+router.post("/", authRequired, async (req, res) => {
   try {
     const alert = await createAlert(req);
     res.status(201).json({ success: true, data: alert });
@@ -12,9 +13,9 @@ router.post("/", async (req, res) => {
   }
 });
 
-router.get("/", async (_req, res) => {
+router.get("/", authRequired, async (req, res) => {
   try {
-    const alerts = await listAlerts();
+    const alerts = await listAlerts(req.auth);
     res.json({ success: true, data: alerts });
   } catch (error) {
     res.status(500).json({ success: false, error: error.message });

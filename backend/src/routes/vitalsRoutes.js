@@ -1,4 +1,5 @@
 import express from "express";
+import authRequired from "../middleware/authRequired.js";
 import {
   createVitals,
   getLatestVitals,
@@ -7,7 +8,7 @@ import {
 
 const router = express.Router();
 
-router.post("/", async (req, res) => {
+router.post("/", authRequired, async (req, res) => {
   try {
     const vitals = await createVitals(req);
     res.status(201).json({ success: true, data: vitals });
@@ -16,18 +17,18 @@ router.post("/", async (req, res) => {
   }
 });
 
-router.get("/latest", async (_req, res) => {
+router.get("/latest", authRequired, async (req, res) => {
   try {
-    const latest = await getLatestVitals();
+    const latest = await getLatestVitals(req.auth);
     res.json({ success: true, data: latest });
   } catch (error) {
     res.status(500).json({ success: false, error: error.message });
   }
 });
 
-router.get("/history", async (req, res) => {
+router.get("/history", authRequired, async (req, res) => {
   try {
-    const history = await getVitalsHistory(req.query.limit);
+    const history = await getVitalsHistory(req.auth, req.query.limit);
     res.json({ success: true, data: history });
   } catch (error) {
     res.status(500).json({ success: false, error: error.message });

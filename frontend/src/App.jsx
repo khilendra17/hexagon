@@ -1,43 +1,38 @@
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
-import { SocketProvider } from './context/SocketContext';
-import Login from './pages/Login';
-import Dashboard from './pages/Dashboard';
-import PatientDetail from './pages/PatientDetail';
-import Patients from './pages/Patients';
-import Alerts from './pages/Alerts';
-import Logs from './pages/Logs';
-import Settings from './pages/Settings';
+import { useState } from "react";
+import Login from "./pages/Login";
+import Dashboard from "./pages/Dashboard";
 
-function AuthGuard({ children }) {
-  const token = localStorage.getItem('smartiv_token');
-  return token ? children : <Navigate to="/login" replace />;
-}
-
-function RootRedirect() {
-  const token = localStorage.getItem('smartiv_token');
-  // If logged in, go to dashboard; otherwise go to the marketing site
-  if (token) return <Navigate to="/dashboard" replace />;
-  // /site/ is served statically from public/site/index.html
-  window.location.replace('/site/');
-  return null;
+function getStoredUser() {
+  try {
+    return JSON.parse(localStorage.getItem("smartiv_user") || "null");
+  } catch {
+    return null;
+  }
 }
 
 export default function App() {
+  const [token, setToken] = useState(() => localStorage.getItem("smartiv_token"));
+  const user = getStoredUser();
+
+  function logout() {
+    localStorage.removeItem("smartiv_token");
+    localStorage.removeItem("smartiv_user");
+    setToken(null);
+  }
+
+  if (!token) {
+    return <Login onLoggedIn={() => setToken(localStorage.getItem("smartiv_token"))} />;
+  }
+
   return (
-    <BrowserRouter>
-      <SocketProvider>
-        <Routes>
-          <Route path="/login" element={<Login />} />
-          <Route path="/" element={<RootRedirect />} />
-          <Route path="/dashboard" element={<AuthGuard><Dashboard /></AuthGuard>} />
-          <Route path="/patients" element={<AuthGuard><Patients /></AuthGuard>} />
-          <Route path="/patient/:id" element={<AuthGuard><PatientDetail /></AuthGuard>} />
-          <Route path="/alerts" element={<AuthGuard><Alerts /></AuthGuard>} />
-          <Route path="/logs" element={<AuthGuard><Logs /></AuthGuard>} />
-          <Route path="/settings" element={<AuthGuard><Settings /></AuthGuard>} />
-          <Route path="*" element={<AuthGuard><Navigate to="/dashboard" replace /></AuthGuard>} />
-        </Routes>
-      </SocketProvider>
-    </BrowserRouter>
+    <div>
+      <div style={{ padding: "10px 20px", borderBottom: "1px solid #e5e7eb", display: "flex", justifyContent: "space-between" }}>
+        <div style={{ fontFamily: "system-ui" }}>
+          Signed in as <b>{user?.email || "user"}</b> ({user?.role || "unknown"})
+        </div>
+        <button onClick={logout}>Logout</button>
+      </div>
+      <Dashboard />
+    </div>
   );
 }

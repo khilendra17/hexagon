@@ -11,7 +11,7 @@ export function scheduleDrugCurveCompute(event, io) {
   if (!event || event.type !== "iv_start" || !io) return;
   setImmediate(() => {
     drugCurveService
-      .compute(event.timestamp)
+      .compute(event.timestamp, event.patientId)
       .then((result) => {
         if (result) emitInsightUpdate(io, result);
       })

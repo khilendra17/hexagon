@@ -1,9 +1,10 @@
 import Vitals from "../models/Vitals.js";
 
-let lastResult = null;
+const lastByPatientId = new Map();
 
-export function getLastInsight() {
-  return lastResult;
+export function getLastInsight(patientId) {
+  if (!patientId) return null;
+  return lastByPatientId.get(String(patientId)) || null;
 }
 
 function toDate(t) {
@@ -56,18 +57,16 @@ export function generateInsight(curveResult) {
   return `Patient showed initial response at ${x} minutes but required extended time to stabilise (${y} minutes).`;
 }
 
-export async function compute(ivStartTime) {
+export async function compute(ivStartTime, patientId) {
   const start = toDate(ivStartTime);
-  if (!start) {
-    lastResult = null;
-    return null;
-  }
+  if (!start || !patientId) return null;
 
   const ms10 = 10 * 60 * 1000;
   const ms30 = 30 * 60 * 1000;
   const preWindowStart = new Date(start.getTime() - ms10);
 
   const preRaw = await Vitals.find({
+    patientId,
     timestamp: { $gte: preWindowStart, $lt: start },
   })
     .sort({ timestamp: -1 })
@@ -84,6 +83,7 @@ export async function compute(ivStartTime) {
 
   const postEnd = new Date(start.getTime() + ms30);
   const post = await Vitals.find({
+    patientId,
     timestamp: { $gt: start, $lte: postEnd },
   })
     .sort({ timestamp: 1 })
@@ -140,6 +140,7 @@ export async function compute(ivStartTime) {
 
   const result = {
     ivStartTime: start.toISOString(),
+    patientId: String(patientId),
     baseline,
     responseDelayMins,
     improvement,
@@ -147,6 +148,6 @@ export async function compute(ivStartTime) {
     vitalsTimeline,
   };
   result.insight = generateInsight(result);
-  lastResult = result;
+  lastByPatientId.set(String(patientId), result);
   return result;
 }

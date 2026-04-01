@@ -9,6 +9,11 @@ import eventRoutes from "./routes/eventRoutes.js";
 import alertRoutes from "./routes/alertRoutes.js";
 import insightsRoutes from "./routes/insightsRoutes.js";
 import analyzeFrameRoutes from "./routes/analyzeFrameRoutes.js";
+import authRoutes from "./routes/authRoutes.js";
+import patientsRoutes from "./routes/patientsRoutes.js";
+import patientRoutes from "./routes/patientRoutes.js";
+import nodeRoutes from "./routes/nodeRoutes.js";
+import startMockNodeCollector from "./mock/startMockNodeCollector.js";
 
 dotenv.config();
 
@@ -25,6 +30,10 @@ app.use("/api/events", eventRoutes);
 app.use("/api/alerts", alertRoutes);
 app.use("/api/insights", insightsRoutes);
 app.use("/api/analyze-frame", analyzeFrameRoutes);
+app.use("/api/auth", authRoutes);
+app.use("/api/nodes", nodeRoutes);
+app.use("/api/patients", patientsRoutes);
+app.use("/api/patient", patientRoutes);
 
 app.get("/health", (_req, res) => {
   res.status(200).json({ status: "ok", service: "backend" });
@@ -35,6 +44,8 @@ connectDB()
     server.listen(port, () => {
       console.log(`Backend listening on port ${port}`);
     });
+    // Demo/test-only: periodically generates mock data from DeviceNode assignments.
+    startMockNodeCollector(app.locals.io);
   })
   .catch((error) => {
     console.error("Failed to start backend:", error.message);

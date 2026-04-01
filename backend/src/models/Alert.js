@@ -11,6 +11,8 @@ const alertSchema = new mongoose.Schema(
     },
     acknowledged: { type: Boolean, default: false },
     hash: { type: String },
+    // RBAC: alert belongs to exactly one patient
+    patientId: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
     timestamp: { type: Date, default: Date.now },
   },
   { versionKey: false }
