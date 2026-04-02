@@ -1,7 +1,11 @@
 import jwt from "jsonwebtoken";
 
 function getJwtSecret() {
-  return process.env.JWT_SECRET || "dev-only-change-me";
+  const secret = process.env.JWT_SECRET;
+  if (!secret || !String(secret).trim()) {
+    throw new Error("JWT_SECRET is not set");
+  }
+  return secret;
 }
 
 export default function authRequired(req, res, next) {

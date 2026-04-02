@@ -8,7 +8,11 @@ import authRequired from "../middleware/authRequired.js";
 const router = express.Router();
 
 function jwtSecret() {
-  return process.env.JWT_SECRET || "dev-only-change-me";
+  const secret = process.env.JWT_SECRET;
+  if (!secret || !String(secret).trim()) {
+    throw new Error("JWT_SECRET is not set");
+  }
+  return secret;
 }
 
 function expiresIn() {
@@ -41,10 +45,10 @@ router.post("/login", async (req, res) => {
       );
       return res.json({
         success: true,
-        data: {
-          token,
-          user: { id: demoDoctor._id.toString(), role: demoDoctor.role, email: demoDoctor.email },
-        },
+        token,
+        role: demoDoctor.role,
+        data: { token, role: demoDoctor.role },
+        user: { id: demoDoctor._id.toString(), role: demoDoctor.role, email: demoDoctor.email },
       });
     }
 
@@ -66,10 +70,10 @@ router.post("/login", async (req, res) => {
 
     return res.json({
       success: true,
-      data: {
-        token,
-        user: { id: user._id.toString(), role: user.role, email: user.email },
-      },
+      token,
+      role: user.role,
+      data: { token, role: user.role },
+      user: { id: user._id.toString(), role: user.role, email: user.email },
     });
   } catch (error) {
     return res.status(500).json({ success: false, error: error.message });

@@ -1,5 +1,8 @@
 import express from "express";
-import { getLastInsight } from "../services/drugCurveService.js";
+import {
+  getLastInsight,
+  getLatestInsightAcrossPatients,
+} from "../services/drugCurveService.js";
 import authRequired from "../middleware/authRequired.js";
 
 const router = express.Router();
@@ -11,13 +14,10 @@ router.get("/", authRequired, (req, res) => {
     return res.json({ success: true, data: getLastInsight(userId) });
   }
 
-  // doctor: must specify patientId
   const patientId = req.query.patientId;
+  // doctor: if patientId not provided, return the latest computed insight across any patient
   if (!patientId) {
-    return res.status(400).json({
-      success: false,
-      error: "patientId query param is required for doctors",
-    });
+    return res.json({ success: true, data: getLatestInsightAcrossPatients() });
   }
 
   return res.json({ success: true, data: getLastInsight(patientId) });

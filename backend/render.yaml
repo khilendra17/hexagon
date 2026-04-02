@@ -1,0 +1,18 @@
+services:
+  - type: web
+    name: patient-monitor-backend
+    env: node
+    buildCommand: npm install
+    startCommand: node src/app.js
+    envVars:
+      - key: MONGO_URI
+        sync: false
+      - key: JWT_SECRET
+        sync: false
+      - key: AI_SERVICE_URL
+        sync: false
+      - key: SOCKET_CORS_ORIGIN
+        sync: false
+      - key: PORT
+        value: 4000
+

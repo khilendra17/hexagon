@@ -7,6 +7,23 @@ export function getLastInsight(patientId) {
   return lastByPatientId.get(String(patientId)) || null;
 }
 
+export function getLatestInsightAcrossPatients() {
+  // Pick the most recently computed curve (highest ivStartTime) across all patients.
+  let latest = null;
+  let latestTime = null;
+
+  for (const result of lastByPatientId.values()) {
+    const t = result?.ivStartTime ? new Date(result.ivStartTime).getTime() : null;
+    if (!Number.isFinite(t)) continue;
+    if (latestTime == null || t > latestTime) {
+      latestTime = t;
+      latest = result;
+    }
+  }
+
+  return latest || null;
+}
+
 function toDate(t) {
   if (!t) return null;
   const d = t instanceof Date ? t : new Date(t);

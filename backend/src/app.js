@@ -19,14 +19,58 @@ dotenv.config();
 
 const app = express();
 const server = http.createServer(app);
-const port = process.env.PORT || 4000;
+function validateRequiredEnv() {
+  const required = (name) => {
+    const val = process.env[name];
+    if (!val || !String(val).trim()) {
+      throw new Error(`${name} is not set`);
+    }
+    return val;
+  };
+
+  const parseCorsOrigins = (value) => {
+    // Keep this strict to avoid accidental wildcard CORS.
+    if (!value) throw new Error("SOCKET_CORS_ORIGIN is not set");
+    if (String(value).includes("*")) {
+      throw new Error("SOCKET_CORS_ORIGIN must not contain '*'");
+    }
+    const origins = String(value)
+      .split(",")
+      .map((s) => s.trim())
+      .filter(Boolean);
+    if (!origins.length) throw new Error("SOCKET_CORS_ORIGIN has no valid origins");
+    return origins;
+  };
+
+  // Required env vars (as per PRD).
+  required("AI_SERVICE_URL");
+  required("SOCKET_CORS_ORIGIN");
+  required("JWT_SECRET");
+
+  // MONGO_URI may be called MONGODB_URI in some older setups; accept either.
+  if (!process.env.MONGO_URI && !process.env.MONGODB_URI) {
+    throw new Error("MONGO_URI is not set (or MONGODB_URI fallback missing)");
+  }
+
+  const portRaw = required("PORT");
+  const port = Number(portRaw);
+  if (!Number.isFinite(port) || port <= 0) {
+    throw new Error(`PORT must be a valid positive number, got: ${portRaw}`);
+  }
+
+  return { port, corsOrigins: parseCorsOrigins(process.env.SOCKET_CORS_ORIGIN) };
+}
+
+let port;
+let corsOrigins;
+try {
+  ({ port, corsOrigins } = validateRequiredEnv());
+} catch (err) {
+  console.error("Backend env validation failed:", err?.message || String(err));
+  process.exit(1);
+}
 
 setupSockets(server, app);
-
-const corsOrigins = (process.env.SOCKET_CORS_ORIGIN || "http://localhost:5173")
-  .split(",")
-  .map((s) => s.trim())
-  .filter(Boolean);
 
 app.use(
   cors({

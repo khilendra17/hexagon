@@ -2,11 +2,22 @@ import { Server } from "socket.io";
 import jwt from "jsonwebtoken";
 
 function jwtSecret() {
-  return process.env.JWT_SECRET || "dev-only-change-me";
+  const secret = process.env.JWT_SECRET;
+  if (!secret || !String(secret).trim()) {
+    throw new Error("JWT_SECRET is not set");
+  }
+  return secret;
 }
 
 export function setupSockets(httpServer, app) {
-  const corsOrigins = (process.env.SOCKET_CORS_ORIGIN || "http://localhost:5173")
+  const raw = process.env.SOCKET_CORS_ORIGIN;
+  if (!raw || !String(raw).trim()) {
+    throw new Error("SOCKET_CORS_ORIGIN is not set");
+  }
+  if (String(raw).includes("*")) {
+    throw new Error("SOCKET_CORS_ORIGIN must not contain '*'");
+  }
+  const corsOrigins = String(raw)
     .split(",")
     .map((s) => s.trim())
     .filter(Boolean);
